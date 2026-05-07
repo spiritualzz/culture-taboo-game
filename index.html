@@ -15,26 +15,47 @@
 
 /* ===== BASE ===== */
 html,body{width:100%;height:100%;overflow:hidden;font-family:'Segoe UI',system-ui,sans-serif;background:var(--darker);}
-html::-webkit-scrollbar, body::-webkit-scrollbar {display:none;}
 
-/* ===== SCREENS ===== */
-.screen{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity 0.4s;pointer-events:none;opacity:0;z-index:1;}
-.screen.active{pointer-events:all;opacity:1;z-index:10;}
-.screen::-webkit-scrollbar{display:none!important;-ms-overflow-style:none;scrollbar-width:none;}
-.screen *::-webkit-scrollbar{display:none!important;-ms-overflow-style:none;scrollbar-width:none;}
+/* ===== SCREENS — reliable display-based switching ===== */
+.screen{
+  position:fixed;inset:0;display:none;
+  flex-direction:column;align-items:center;justify-content:center;
+  transition:opacity 0.3s;
+}
+.screen.active{display:flex;opacity:1;z-index:10;}
 
-/* ===== PARTICLES BG ===== */
+/* ===== PARTICLES BG — behind everything, never intercepts events ===== */
 #particles-canvas{position:fixed;inset:0;z-index:0;pointer-events:none;}
 
 /* ===== LANG SCREEN ===== */
-#lang-screen{background:linear-gradient(160deg,#1a0a2e 0%,#2d0838 40%,#0d1b3e 100%);overflow-y:auto;overflow-x:hidden;}
-#lang-screen::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 30%,rgba(196,30,58,0.3) 0%,transparent 60%);}
-.title-big{font-size:clamp(28px,8vw,52px);font-weight:900;text-align:center;position:relative;z-index:1;
-  background:linear-gradient(135deg,#fff 0%,#f59e0b 50%,#c41e3a 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;
-  filter:drop-shadow(0 0 20px rgba(245,158,11,0.5));animation:titlePulse 3s ease-in-out infinite;}
-@keyframes titlePulse{0%,100%{filter:drop-shadow(0 0 20px rgba(245,158,11,0.5));}50%{filter:drop-shadow(0 0 35px rgba(245,158,11,0.8));}}
+#lang-screen{
+  background:linear-gradient(160deg,#1a0a2e 0%,#2d0838 40%,#0d1b3e 100%);
+  overflow-y:auto;overflow-x:hidden;
+  z-index:5;
+}
+#lang-screen.active{z-index:5;}
+#lang-screen::before{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse at 50% 30%,rgba(196,30,58,0.3) 0%,transparent 60%);
+  pointer-events:none;
+}
+.title-big{
+  font-size:clamp(28px,8vw,52px);font-weight:900;text-align:center;
+  position:relative;z-index:1;
+  background:linear-gradient(135deg,#fff 0%,#f59e0b 50%,#c41e3a 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  filter:drop-shadow(0 0 20px rgba(245,158,11,0.5));
+  animation:titlePulse 3s ease-in-out infinite;
+}
+@keyframes titlePulse{
+  0%,100%{filter:drop-shadow(0 0 20px rgba(245,158,11,0.5));}
+  50%{filter:drop-shadow(0 0 35px rgba(245,158,11,0.8));}
+}
 .title-sub{font-size:14px;color:var(--text2);margin-top:8px;text-align:center;position:relative;z-index:1;}
-.lang-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:90%;max-width:360px;margin-top:32px;position:relative;z-index:1;}
+.lang-grid{
+  display:grid;grid-template-columns:1fr 1fr;gap:10px;
+  width:90%;max-width:360px;margin-top:32px;position:relative;z-index:1;
+}
 .lang-btn{
   background:rgba(255,255,255,0.07);
   border:1.5px solid rgba(255,255,255,0.2);
@@ -42,8 +63,9 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {display:none;}
   color:#fff;font-size:14px;font-weight:600;cursor:pointer;
   transition:all 0.25s;backdrop-filter:blur(8px);text-align:center;
   position:relative;overflow:hidden;
+  -webkit-tap-highlight-color:transparent;
 }
-.lang-btn::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(196,30,58,0.0),rgba(245,158,11,0.0));transition:all 0.3s;}
+.lang-btn::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(196,30,58,0),rgba(245,158,11,0));transition:all 0.3s;pointer-events:none;}
 .lang-btn:hover::before,.lang-btn.selected::before{background:linear-gradient(135deg,rgba(196,30,58,0.25),rgba(245,158,11,0.15));}
 .lang-btn:hover,.lang-btn.selected{border-color:var(--gold);transform:scale(1.04);box-shadow:0 0 20px rgba(245,158,11,0.3);}
 .lang-btn .flag{font-size:26px;display:block;margin-bottom:6px;}
@@ -54,12 +76,18 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {display:none;}
   box-shadow:0 4px 20px rgba(196,30,58,0.5);
   transition:all 0.2s;position:relative;z-index:1;
   animation:startPulse 2s ease-in-out infinite;
+  -webkit-tap-highlight-color:transparent;
 }
 @keyframes startPulse{0%,100%{box-shadow:0 4px 20px rgba(196,30,58,0.5);}50%{box-shadow:0 4px 35px rgba(196,30,58,0.8),0 0 0 8px rgba(196,30,58,0.1);}}
 .start-btn:hover{transform:scale(1.05);box-shadow:0 6px 30px rgba(196,30,58,0.7);}
 
 /* ===== LEVEL SELECT ===== */
-#level-screen{background:linear-gradient(160deg,var(--darker) 0%,var(--dark) 100%);padding:20px;overflow-y:auto;overflow-x:hidden;justify-content:flex-start;padding-top:60px;}
+#level-screen{
+  background:linear-gradient(160deg,var(--darker) 0%,var(--dark) 100%);
+  padding:20px;overflow-y:auto;overflow-x:hidden;
+  justify-content:flex-start;padding-top:60px;
+  z-index:5;
+}
 .level-header{text-align:center;margin-bottom:24px;position:relative;z-index:1;}
 .level-header h2{font-size:22px;font-weight:800;color:#fff;}
 .level-header p{color:var(--text2);font-size:13px;margin-top:6px;}
@@ -68,8 +96,9 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {display:none;}
   background:var(--card);border-radius:16px;padding:16px 12px;
   border:2px solid rgba(255,255,255,0.06);cursor:pointer;
   transition:all 0.25s;text-align:center;position:relative;overflow:hidden;
+  -webkit-tap-highlight-color:transparent;
 }
-.lv-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--accent,var(--red));}
+.lv-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--accent,var(--red));pointer-events:none;}
 .lv-card:hover:not(.locked){transform:translateY(-4px);border-color:var(--accent,var(--red));box-shadow:0 8px 24px rgba(0,0,0,0.4);}
 .lv-card.locked{opacity:0.45;cursor:default;}
 .lv-emoji{font-size:32px;margin-bottom:8px;}
@@ -82,15 +111,22 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {display:none;}
 #game-screen{
   background:linear-gradient(160deg,#0d1b3e 0%,#1a0a2e 50%,#0d1b2e 100%);
   overflow:hidden;padding:0;justify-content:flex-start;
+  z-index:5;
 }
 
 /* game header */
 .g-header{
   width:100%;max-width:520px;display:flex;align-items:center;justify-content:space-between;
   padding:12px 16px;background:rgba(0,0,0,0.3);backdrop-filter:blur(8px);
-  border-bottom:1px solid rgba(255,255,255,0.07);z-index:20;flex-shrink:0;
+  border-bottom:1px solid rgba(255,255,255,0.07);
+  flex-shrink:0;position:relative;z-index:20;
 }
-.g-back{background:rgba(255,255,255,0.1);border:none;color:#fff;width:36px;height:36px;border-radius:50%;font-size:16px;cursor:pointer;transition:all 0.2s;}
+.g-back{
+  background:rgba(255,255,255,0.1);border:none;color:#fff;
+  width:36px;height:36px;border-radius:50%;font-size:16px;
+  cursor:pointer;transition:all 0.2s;
+  -webkit-tap-highlight-color:transparent;
+}
 .g-back:hover{background:rgba(255,255,255,0.2);}
 .g-title{font-size:15px;font-weight:700;color:#fff;}
 .g-lives{display:flex;gap:4px;font-size:18px;}
@@ -179,14 +215,14 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {display:none;}
   background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);
   border-radius:14px;padding:12px 16px;
   font-size:14px;line-height:1.6;color:#e2e8f0;text-align:center;
-  flex-shrink:0;overflow-x:hidden!important;
+  flex-shrink:0;overflow:hidden;
 }
 .scenario-box strong{color:var(--gold);}
 
-/* ===== ITEMS GRID — FIX SCROLLBAR FLASHING ===== */
+/* ===== ITEMS GRID ===== */
 .items-wrap{
   display:flex;gap:10px;justify-content:center;flex-wrap:wrap;flex-shrink:0;
-  padding:4px 0;overflow-x:hidden!important;overflow-y:hidden!important;
+  padding:4px 0;overflow:hidden;
   -webkit-overflow-scrolling:touch;
 }
 .item-card{
@@ -195,8 +231,9 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {display:none;}
   border:2px solid rgba(255,255,255,0.1);cursor:grab;
   transition:all 0.2s;user-select:none;position:relative;overflow:hidden;
   touch-action:none;flex-shrink:0;
+  -webkit-tap-highlight-color:transparent;
 }
-.item-card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,0.03),transparent);}
+.item-card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,0.03),transparent);pointer-events:none;}
 .item-card:hover:not(.used):not(.dragging){
   transform:translateY(-4px) scale(1.05);
   border-color:rgba(245,158,11,0.4);
@@ -215,29 +252,25 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {display:none;}
   position:fixed;width:68px;height:80px;background:var(--card);
   border-radius:14px;border:2px solid var(--gold);
   display:none;align-items:center;justify-content:center;flex-direction:column;gap:4px;
-  pointer-events:none;z-index:999;opacity:0.9;transform:translate(-50%,-50%) scale(1.1);
+  pointer-events:none;z-index:9999;opacity:0.9;transform:translate(-50%,-50%) scale(1.1);
   box-shadow:0 8px 30px rgba(245,158,11,0.5);
 }
 #drag-ghost .ghost-emoji{font-size:28px;}
 
-/* ===== RESULT POPUP — FIX BUTTONS NOT WORKING ===== */
+/* ===== RESULT POPUP ===== */
 .result-popup{
-  position:fixed;inset:0;background:rgba(0,0,0,0.75);backdrop-filter:blur(10px);
-  z-index:200;display:none;align-items:center;justify-content:center;padding:20px;
-  opacity:0;transition:opacity 0.3s;
+  position:fixed;inset:0;background:rgba(0,0,0,0.8);backdrop-filter:blur(10px);
+  z-index:9999;display:none;align-items:center;justify-content:center;padding:20px;
 }
-.result-popup.show{
-  display:flex;opacity:1;
-}
-.result-popup.hidden{
-  display:none!important;opacity:0!important;
-}
+.result-popup.show{display:flex;animation:fadeIn 0.2s ease-out;}
+@keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
 .result-card{
   background:linear-gradient(160deg,#1e3a5f,#2d1b69);
   border-radius:24px;padding:28px 24px;width:100%;max-width:380px;
   border:1px solid rgba(255,255,255,0.15);box-shadow:0 20px 60px rgba(0,0,0,0.6);
   animation:popIn 0.4s cubic-bezier(0.34,1.56,0.64,1);
   max-height:85vh;overflow-y:auto;
+  position:relative;z-index:10000;
 }
 @keyframes popIn{0%{transform:scale(0.6);opacity:0;}100%{transform:scale(1);opacity:1;}}
 .result-title{font-size:22px;font-weight:800;color:#fff;text-align:center;margin-bottom:4px;}
@@ -261,14 +294,18 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {display:none;}
   flex:1;padding:14px;background:linear-gradient(135deg,var(--gold),#f97316);
   color:#fff;font-weight:700;font-size:15px;border:none;border-radius:14px;
   cursor:pointer;transition:all 0.2s;
+  -webkit-tap-highlight-color:transparent;
 }
 .btn-next:hover{transform:scale(1.02);box-shadow:0 4px 16px rgba(245,158,11,0.4);}
+.btn-next:active{transform:scale(0.98);}
 .btn-replay{
   padding:14px 20px;background:rgba(255,255,255,0.1);
   color:#fff;font-weight:600;font-size:14px;border:1px solid rgba(255,255,255,0.2);border-radius:14px;
   cursor:pointer;transition:all 0.2s;
+  -webkit-tap-highlight-color:transparent;
 }
 .btn-replay:hover{background:rgba(255,255,255,0.15);}
+.btn-replay:active{transform:scale(0.98);}
 
 /* ===== SHAKE SCREEN ===== */
 @keyframes screenShake{
@@ -296,13 +333,14 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {display:none;}
 
 /* ===== MUSIC TOGGLE ===== */
 .music-toggle{
-  position:fixed;bottom:18px;right:18px;z-index:300;
+  position:fixed;bottom:18px;right:18px;z-index:99999;
   width:42px;height:42px;border-radius:50%;
-  background:rgba(0,0,0,0.45);backdrop-filter:blur(8px);
-  border:1px solid rgba(255,255,255,0.15);
+  background:rgba(0,0,0,0.5);backdrop-filter:blur(8px);
+  border:1px solid rgba(255,255,255,0.2);
   color:#fff;font-size:18px;cursor:pointer;
   display:flex;align-items:center;justify-content:center;
   transition:all 0.2s;user-select:none;
+  -webkit-tap-highlight-color:transparent;
 }
 .music-toggle:hover{background:rgba(0,0,0,0.65);transform:scale(1.08);}
 .music-toggle.playing{color:var(--gold);border-color:rgba(245,158,11,0.4);box-shadow:0 0 12px rgba(245,158,11,0.2);}
@@ -316,7 +354,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {display:none;}
   .scenario-box{display:none;}
 }
 
-/* ===== GLOBAL SCROLLBAR HIDE (CRITICAL FIX) ===== */
+/* ===== GLOBAL SCROLLBAR HIDE ===== */
 *{-ms-overflow-style:none;scrollbar-width:none;}
 *::-webkit-scrollbar{display:none!important;width:0!important;height:0!important;}
 </style>
@@ -326,18 +364,18 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {display:none;}
 <canvas id="particles-canvas"></canvas>
 
 <!-- LANG SCREEN -->
-<div id="lang-screen" class="screen active">
+<div id="lang-screen" class="screen active" style="display:flex;">
   <div class="title-big">🀄 中文文化闯关</div>
   <div class="title-sub">Chinese Culture Quest · เกมวัฒนธรรมจีน</div>
   <div class="lang-grid">
-    <button class="lang-btn" onclick="setLang('zh')"><span class="flag">🇨🇳</span>中文</button>
-    <button class="lang-btn selected" onclick="setLang('en')"><span class="flag">🇺🇸</span>English</button>
-    <button class="lang-btn" onclick="setLang('th')"><span class="flag">🇹🇭</span>ภาษาไทย</button>
-    <button class="lang-btn" onclick="setLang('ja')"><span class="flag">🇯🇵</span>日本語</button>
-    <button class="lang-btn" onclick="setLang('ko')"><span class="flag">🇰🇷</span>한국어</button>
-    <button class="lang-btn" onclick="setLang('es')"><span class="flag">🇪🇸</span>Español</button>
+    <button class="lang-btn" data-action="setLang" data-lang="zh"><span class="flag">🇨🇳</span>中文</button>
+    <button class="lang-btn selected" data-action="setLang" data-lang="en"><span class="flag">🇺🇸</span>English</button>
+    <button class="lang-btn" data-action="setLang" data-lang="th"><span class="flag">🇹🇭</span>ภาษาไทย</button>
+    <button class="lang-btn" data-action="setLang" data-lang="ja"><span class="flag">🇯🇵</span>日本語</button>
+    <button class="lang-btn" data-action="setLang" data-lang="ko"><span class="flag">🇰🇷</span>한국어</button>
+    <button class="lang-btn" data-action="setLang" data-lang="es"><span class="flag">🇪🇸</span>Español</button>
   </div>
-  <button class="start-btn" onclick="goLevels()">🎮 开始游戏 START</button>
+  <button class="start-btn" id="btn-start">🎮 开始游戏 START</button>
 </div>
 
 <!-- LEVEL SELECT -->
@@ -352,7 +390,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {display:none;}
 <!-- GAME SCREEN -->
 <div id="game-screen" class="screen">
   <div class="g-header">
-    <button class="g-back" onclick="goLevels()">←</button>
+    <button class="g-back" id="btn-goback">←</button>
     <div class="g-title" id="g-level-title">送礼禁忌</div>
     <div style="display:flex;align-items:center;gap:12px;">
       <div class="g-lives" id="g-lives">❤️❤️❤️</div>
@@ -381,12 +419,12 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {display:none;}
 
 <div id="drag-ghost"><div class="ghost-emoji" id="ghost-emoji"></div><div id="ghost-name" style="font-size:10px;color:rgba(255,255,255,0.7);"></div></div>
 
-<!-- Result popup — buttons are created by JS each time to avoid event binding loss -->
-<div class="result-popup hidden" id="result-popup">
+<!-- Result popup -->
+<div class="result-popup" id="result-popup">
   <div class="result-card" id="result-card"></div>
 </div>
 
-<button class="music-toggle" id="music-toggle" onclick="toggleMusic()" title="Music On/Off">🔇</button>
+<button class="music-toggle" id="music-toggle" title="Music On/Off">🔇</button>
 
 <script>
 /* ===================================================
@@ -555,7 +593,13 @@ let currentLevel=null,lives=3,score=0,combo=0,answered=[],dragItem=null,levelSco
 =================================================== */
 function t(k){return(T[lang]&&T[lang][k])||T.en[k]||k;}
 function tl(o){return o[lang]||o.en||Object.values(o)[0];}
-function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
+
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>{s.classList.remove('active');s.style.display='none';});
+  const el=document.getElementById(id);
+  el.style.display='flex';
+  el.classList.add('active');
+}
 
 function setLang(l){
   lang=l;
@@ -579,7 +623,7 @@ function getCharSVG(key,mood='neutral'){
 }
 
 /* ===================================================
-   NAVIGATION
+   NAVIGATION & EVENT BINDING (ALL DONE IN INIT)
 =================================================== */
 function goLevels(){renderLevels();showScreen('level-screen');}
 
@@ -592,7 +636,7 @@ function renderLevels(){
     const locked=lv.locked&&!unlocked,stars=levelScores[lv.id]||0;
     const d=document.createElement('div');d.className='lv-card'+(locked?' locked':'');d.style.setProperty('--accent',lv.accent);
     d.innerHTML=`<div class="lv-emoji">${lv.emoji}</div><div class="lv-num">LV.${lv.id}</div><div class="lv-title">${tl(lv.title)}</div><div class="lv-stars">${'⭐'.repeat(stars)}${'☆'.repeat(3-stars)}</div>${locked?'<div class="lv-lock">🔒</div>:''}`;
-    if(!locked)d.onclick=()=>startLevel(lv.id);
+    if(!locked)d.addEventListener('click',()=>startLevel(lv.id));
     wrap.appendChild(d);
   });
 }
@@ -738,33 +782,25 @@ function playSound(type){
 =================================================== */
 let musicPlaying=false,musicNodes=[],musicInterval=null;
 
-// Simple pentatonic melody loop using Web Audio API — light, relaxing, game-like
 function startBGM(){
   try{
-    stopBGM(); // clean up first
+    stopBGM();
     const ctx=getAudioCtx();
-
-    // Create master gain for volume control
     const master=ctx.createGain();
-    master.gain.value=0.06; // quiet background level
+    master.gain.value=0.06;
     master.connect(ctx.destination);
-
-    // Melody notes (pentatonic scale, cheerful pattern)
     const melody=[
       {note:523.25,dur:0.3},{note:587.33,dur:0.15},{note:659.25,dur:0.3},{note:783.99,dur:0.3},
       {note:659.25,dur:0.15},{note:587.33,dur:0.3},{note:523.25,dur:0.4},
       {note:392.00,dur:0.3},{note:440.00,dur:0.15},{note:493.88,dur:0.3},{note:587.33,dur:0.3},
       {note:493.88,dur:0.15},{note:440.00,dur:0.3},{note:392.00,dur:0.4},
-      // pause
       {note:0,dur:0.2},
-      // repeat variation
       {note:523.25,dur:0.2},{note:659.25,dur:0.2},{note:783.99,dur:0.2},{note:880.00,dur:0.4},
       {note:783.99,dur:0.2},{note:659.25,dur:0.2},{note:523.25,dur:0.4},
       {note:0,dur:0.3},
       {note:392.00,dur:0.2},{note:493.88,dur:0.2},{note:587.33,dur:0.2},{note:659.25,dur:0.4},
       {note:0,dur:0.5},
     ];
-
     let idx=0;
     function playNote(){
       if(!musicPlaying)return;
@@ -780,9 +816,8 @@ function startBGM(){
       }
       idx=(idx+1)%melody.length;
     }
-
     playNote();
-    musicInterval=setInterval(playNote,320); // tempo
+    musicInterval=setInterval(playNote,320);
     musicNodes.push(master);
     musicPlaying=true;
   }catch(e){musicPlaying=false;}
@@ -806,7 +841,7 @@ document.addEventListener('click',function once(){
 },{once:true});
 
 /* ===================================================
-   RESULT POPUP — FIXED: buttons always work
+   RESULT POPUP — buttons always work via addEventListener
 =================================================== */
 function showResultPopup(item,correct){
   const popup=document.getElementById('result-popup'),card=document.getElementById('result-card');
@@ -830,27 +865,33 @@ function showResultPopup(item,correct){
     </div>
     ${vocabHTML}
     <div class="result-btns">
-      <button class="btn-replay" data-action="${allAnswered?'replay_level':'close'}">${allAnswered?'📊 '+t('replay'):'← 继续'}</button>
-      <button class="btn-next" data-action="${allAnswered?'level_complete':'next_q'}">${allAnswered?'🏆 '+t('level_done'):t('next')}</button>
+      <button class="btn-replay" id="popup-btn-a">${allAnswered?'📊 '+t('replay'):'← 继续'}</button>
+      <button class="btn-next" id="popup-btn-b">${allAnswered?'🏆 '+t('level_done'):t('next')}</button>
     </div>`;
 
-  // Attach click handlers directly to button elements (NOT via innerHTML onclick)
-  card.querySelectorAll('[data-action]').forEach(btn=>{
-    btn.addEventListener('click',function(){
-      const action=this.getAttribute('data-action');
-      closePopup();
-      if(action==='next_q'){renderItems();}
-      else if(action==='level_complete'){levelComplete();}
-      else if(action==='replay_level'){startLevel(currentLevel.id);}
-    });
+  // Bind with IDs — guaranteed to work
+  document.getElementById('popup-btn-a').addEventListener('click',function(){
+    closePopup();
+    if(allAnswered){startLevel(currentLevel.id);}else{renderItems();}
+  });
+  document.getElementById('popup-btn-b').addEventListener('click',function(){
+    closePopup();
+    if(allAnswered){levelComplete()}else{processAnswer(findNextUnanswered());}
   });
 
-  popup.classList.remove('hidden');popup.classList.add('show');
+  popup.style.display='flex';
+  popup.classList.add('show');
+}
+
+function findNextUnanswered(){
+  for(let i=0;i<currentLevel.items.length;i++){if(!answered.includes(i))return i;}
+  return 0;
 }
 
 function closePopup(){
   const popup=document.getElementById('result-popup');
-  popup.classList.remove('show');popup.classList.add('hidden');
+  popup.classList.remove('show');
+  popup.style.display='none';
 }
 
 function levelComplete(){
@@ -867,21 +908,20 @@ function levelComplete(){
     <div class="result-emoji">${'⭐'.repeat(stars)}${'☆'.repeat(3-stars)}</div>
     <div style="text-align:center;margin-bottom:16px;"><div style="font-size:32px;font-weight:900;color:var(--gold);">${score}</div><div style="font-size:13px;color:var(--text2);">分数 · Score</div></div>
     <div class="result-btns">
-      <button class="btn-replay" data-action="replay_now">${t('replay')}</button>
-      <button class="btn-next" data-action="go_levels">🗺 选关 Choose Level</button>
+      <button class="btn-replay" id="lc-btn-a">${t('replay')}</button>
+      <button class="btn-next" id="lc-btn-b">🗺 选关 Choose Level</button>
     </div>`;
 
-  card.querySelectorAll('[data-action]').forEach(btn=>{
-    btn.addEventListener('click',function(){
-      const action=this.getAttribute('data-action');
-      closePopup();
-      if(action==='replay_now'){startLevel(currentLevel.id);}
-      else if(action==='go_levels'){goLevels();}
-    });
+  document.getElementById('lc-btn-a').addEventListener('click',function(){
+    closePopup();startLevel(currentLevel.id);
+  });
+  document.getElementById('lc-btn-b').addEventListener('click',function(){
+    closePopup();goLevels();
   });
 
   const popup=document.getElementById('result-popup');
-  popup.classList.remove('hidden');popup.classList.add('show');
+  popup.style.display='flex';
+  popup.classList.add('show');
 }
 
 function showGameOver(){
@@ -892,24 +932,48 @@ function showGameOver(){
     <div class="result-emoji">😵</div>
     <div style="text-align:center;color:var(--text2);font-size:14px;margin-bottom:16px;">${t('go_careful')}<br>Be more careful next time!</div>
     <div class="result-btns">
-      <button class="btn-replay" data-action="go_levels">← 选关</button>
-      <button class="btn-next" data-action="retry">🔄 再来一次</button>
+      <button class="btn-replay" id="go-btn-a">← 选关</button>
+      <button class="btn-next" id="go-btn-b">🔄 再来一次</button>
     </div>`;
 
-  card.querySelectorAll('[data-action]').forEach(btn=>{
-    btn.addEventListener('click',function(){
-      const action=this.getAttribute('data-action');
-      closePopup();
-      if(action==='retry'){startLevel(currentLevel.id);}
-      else if(action==='go_levels'){goLevels();}
-    });
+  document.getElementById('go-btn-a').addEventListener('click',function(){
+    closePopup();goLevels();
+  });
+  document.getElementById('go-btn-b').addEventListener('click',function(){
+    closePopup();startLevel(currentLevel.id);
   });
 
   const popup=document.getElementById('result-popup');
-  popup.classList.remove('hidden');popup.classList.add('show');
+  popup.style.display='flex';
+  popup.classList.add('show');
 }
 
-// Init
+/* ===================================================
+   INIT — bind ALL static button events once
+=================================================== */
+// Language buttons
+document.querySelectorAll('[data-action="setLang"]').forEach(btn=>{
+  btn.addEventListener('click',function(){
+    setLang(this.getAttribute('data-lang'));
+  });
+});
+
+// Start button
+document.getElementById('btn-start').addEventListener('click',function(){
+  goLevels();
+});
+
+// Back button in game
+document.getElementById('btn-goback').addEventListener('click',function(){
+  goLevels();
+});
+
+// Music toggle
+document.getElementById('music-toggle').addEventListener('click',function(){
+  toggleMusic();
+});
+
+// Init language
 setLang('en');
 </script>
 </body>
