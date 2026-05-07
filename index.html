@@ -750,7 +750,7 @@ function showBubble(mood){
 }
 function hideBubble(){document.getElementById('char-bubble').classList.remove('show');}
 
-function markItemCard(idx,cls){const c=document.querySelector(`.item-card[data-index="${idx}"]`);if(c){c.classList.add(cls,'used');setTimeout(()=>{if(c.parentNode)c.parentNode.removeChild(c);},400);}}
+function markItemCard(idx,cls){const c=document.querySelector('.item-card[data-index="'+idx+'"]');if(c){c.classList.add(cls);setTimeout(()=>{c.style.opacity=0;setTimeout(()=>{if(c.parentNode)c.parentNode.removeChild(c);},400);},0);}}
 
 function showFeedback(ok){const ov=document.getElementById('feedback-overlay'),bg=document.getElementById('feedback-big');
   ov.className='feedback-overlay '+(ok?'right':'wrong');bg.textContent=ok?'✅':'❌';ov.classList.add('show');
@@ -830,15 +830,16 @@ function stopBGM(){
 }
 
 function toggleMusic(){
-  if(musicPlaying){stopBGM();document.getElementById('music-toggle').textContent='🔇';document.getElementById('music-toggle').classList.remove('playing');
-  }else{startBGM();document.getElementById('music-toggle').textContent='🎵';document.getElementById('music-toggle').classList.add('playing');}
+  const btn=document.getElementById('music-toggle');
+  if(musicPlaying){stopBGM();btn.textContent='🔇';btn.classList.remove('playing');}
+  else{startBGM();btn.textContent='🎵';btn.classList.add('playing');}
 }
 
 /* Auto-play BGM on first interaction (default ON visual state) */
 let bgmStarted=false;
 document.addEventListener('click',function(){
   if(!bgmStarted){bgmStarted=true;startBGM();}
-},{once:true});;
+},{once:true});
 
 /* ===================================================
    RESULT POPUP — buttons always work via addEventListener
