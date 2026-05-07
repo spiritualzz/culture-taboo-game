@@ -1,0 +1,916 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>中文文化闯关 | Chinese Culture Quest</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --red:#c41e3a;--gold:#f59e0b;--green:#10b981;--blue:#3b82f6;
+  --purple:#8b5cf6;--pink:#ec4899;
+  --dark:#1a1a2e;--darker:#0f0f23;--card:#16213e;--card2:#1a1a3e;
+  --text:#fff;--text2:rgba(255,255,255,0.7);
+}
+
+/* ===== BASE ===== */
+html,body{width:100%;height:100%;overflow:hidden;font-family:'Segoe UI',system-ui,sans-serif;background:var(--darker);}
+html::-webkit-scrollbar, body::-webkit-scrollbar {display:none;}
+
+/* ===== SCREENS ===== */
+.screen{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity 0.4s;pointer-events:none;opacity:0;z-index:1;}
+.screen.active{pointer-events:all;opacity:1;z-index:10;}
+.screen::-webkit-scrollbar{display:none!important;-ms-overflow-style:none;scrollbar-width:none;}
+.screen *::-webkit-scrollbar{display:none!important;-ms-overflow-style:none;scrollbar-width:none;}
+
+/* ===== PARTICLES BG ===== */
+#particles-canvas{position:fixed;inset:0;z-index:0;pointer-events:none;}
+
+/* ===== LANG SCREEN ===== */
+#lang-screen{background:linear-gradient(160deg,#1a0a2e 0%,#2d0838 40%,#0d1b3e 100%);overflow-y:auto;overflow-x:hidden;}
+#lang-screen::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 30%,rgba(196,30,58,0.3) 0%,transparent 60%);}
+.title-big{font-size:clamp(28px,8vw,52px);font-weight:900;text-align:center;position:relative;z-index:1;
+  background:linear-gradient(135deg,#fff 0%,#f59e0b 50%,#c41e3a 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  filter:drop-shadow(0 0 20px rgba(245,158,11,0.5));animation:titlePulse 3s ease-in-out infinite;}
+@keyframes titlePulse{0%,100%{filter:drop-shadow(0 0 20px rgba(245,158,11,0.5));}50%{filter:drop-shadow(0 0 35px rgba(245,158,11,0.8));}}
+.title-sub{font-size:14px;color:var(--text2);margin-top:8px;text-align:center;position:relative;z-index:1;}
+.lang-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:90%;max-width:360px;margin-top:32px;position:relative;z-index:1;}
+.lang-btn{
+  background:rgba(255,255,255,0.07);
+  border:1.5px solid rgba(255,255,255,0.2);
+  border-radius:14px;padding:14px 10px;
+  color:#fff;font-size:14px;font-weight:600;cursor:pointer;
+  transition:all 0.25s;backdrop-filter:blur(8px);text-align:center;
+  position:relative;overflow:hidden;
+}
+.lang-btn::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(196,30,58,0.0),rgba(245,158,11,0.0));transition:all 0.3s;}
+.lang-btn:hover::before,.lang-btn.selected::before{background:linear-gradient(135deg,rgba(196,30,58,0.25),rgba(245,158,11,0.15));}
+.lang-btn:hover,.lang-btn.selected{border-color:var(--gold);transform:scale(1.04);box-shadow:0 0 20px rgba(245,158,11,0.3);}
+.lang-btn .flag{font-size:26px;display:block;margin-bottom:6px;}
+.start-btn{
+  margin-top:24px;padding:16px 48px;font-size:18px;font-weight:700;
+  background:linear-gradient(135deg,var(--red),#e74c3c);
+  color:#fff;border:none;border-radius:50px;cursor:pointer;
+  box-shadow:0 4px 20px rgba(196,30,58,0.5);
+  transition:all 0.2s;position:relative;z-index:1;
+  animation:startPulse 2s ease-in-out infinite;
+}
+@keyframes startPulse{0%,100%{box-shadow:0 4px 20px rgba(196,30,58,0.5);}50%{box-shadow:0 4px 35px rgba(196,30,58,0.8),0 0 0 8px rgba(196,30,58,0.1);}}
+.start-btn:hover{transform:scale(1.05);box-shadow:0 6px 30px rgba(196,30,58,0.7);}
+
+/* ===== LEVEL SELECT ===== */
+#level-screen{background:linear-gradient(160deg,var(--darker) 0%,var(--dark) 100%);padding:20px;overflow-y:auto;overflow-x:hidden;justify-content:flex-start;padding-top:60px;}
+.level-header{text-align:center;margin-bottom:24px;position:relative;z-index:1;}
+.level-header h2{font-size:22px;font-weight:800;color:#fff;}
+.level-header p{color:var(--text2);font-size:13px;margin-top:6px;}
+.levels-wrap{width:100%;max-width:420px;display:grid;grid-template-columns:1fr 1fr;gap:12px;position:relative;z-index:1;}
+.lv-card{
+  background:var(--card);border-radius:16px;padding:16px 12px;
+  border:2px solid rgba(255,255,255,0.06);cursor:pointer;
+  transition:all 0.25s;text-align:center;position:relative;overflow:hidden;
+}
+.lv-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--accent,var(--red));}
+.lv-card:hover:not(.locked){transform:translateY(-4px);border-color:var(--accent,var(--red));box-shadow:0 8px 24px rgba(0,0,0,0.4);}
+.lv-card.locked{opacity:0.45;cursor:default;}
+.lv-emoji{font-size:32px;margin-bottom:8px;}
+.lv-num{font-size:11px;color:var(--text2);font-weight:600;text-transform:uppercase;letter-spacing:1px;}
+.lv-title{font-size:13px;font-weight:700;color:#fff;margin-top:4px;}
+.lv-stars{margin-top:8px;font-size:15px;}
+.lv-lock{font-size:22px;margin-top:8px;}
+
+/* ===== GAME SCREEN ===== */
+#game-screen{
+  background:linear-gradient(160deg,#0d1b3e 0%,#1a0a2e 50%,#0d1b2e 100%);
+  overflow:hidden;padding:0;justify-content:flex-start;
+}
+
+/* game header */
+.g-header{
+  width:100%;max-width:520px;display:flex;align-items:center;justify-content:space-between;
+  padding:12px 16px;background:rgba(0,0,0,0.3);backdrop-filter:blur(8px);
+  border-bottom:1px solid rgba(255,255,255,0.07);z-index:20;flex-shrink:0;
+}
+.g-back{background:rgba(255,255,255,0.1);border:none;color:#fff;width:36px;height:36px;border-radius:50%;font-size:16px;cursor:pointer;transition:all 0.2s;}
+.g-back:hover{background:rgba(255,255,255,0.2);}
+.g-title{font-size:15px;font-weight:700;color:#fff;}
+.g-lives{display:flex;gap:4px;font-size:18px;}
+.g-score{font-size:15px;font-weight:700;color:var(--gold);}
+
+/* game body */
+.g-body{
+  width:100%;max-width:520px;flex:1;display:flex;flex-direction:column;
+  padding:12px 16px;gap:12px;overflow:hidden!important;position:relative;
+}
+
+/* scene container */
+.scene-wrap{
+  flex:1;min-height:200px;position:relative;border-radius:20px;overflow:hidden;
+  background:linear-gradient(180deg,#1e3a5f 0%,#2d1b69 40%,#1a0a2e 100%);
+  border:2px solid rgba(255,255,255,0.08);
+}
+.scene-bg{position:absolute;inset:0;overflow:hidden;}
+.scene-floor{position:absolute;bottom:0;left:0;right:0;height:40%;background:linear-gradient(0deg,rgba(139,92,246,0.15) 0%,transparent 100%);}
+.scene-stars{position:absolute;inset:0;}
+.star-dot{position:absolute;width:2px;height:2px;background:#fff;border-radius:50%;animation:twinkle 2s ease-in-out infinite;}
+@keyframes twinkle{0%,100%{opacity:0.3;}50%{opacity:1;}}
+
+/* character */
+.char-wrap{
+  position:absolute;left:50%;transform:translateX(-50%);bottom:15%;
+  display:flex;flex-direction:column;align-items:center;
+  transition:all 0.3s;z-index:5;
+}
+.char-name-tag{
+  background:rgba(0,0,0,0.5);backdrop-filter:blur(4px);
+  color:#fff;font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;
+  margin-bottom:6px;border:1px solid rgba(255,255,255,0.15);
+}
+.char-bubble{
+  position:absolute;top:-55px;left:50%;transform:translateX(-50%);
+  background:rgba(255,255,255,0.95);color:#1a1a2e;
+  font-size:12px;font-weight:600;padding:8px 12px;border-radius:14px;
+  white-space:nowrap;box-shadow:0 4px 12px rgba(0,0,0,0.3);
+  opacity:0;transition:all 0.3s;pointer-events:none;z-index:10;
+  max-width:160px;text-align:center;white-space:normal;
+}
+.char-bubble::after{content:'';position:absolute;bottom:-6px;left:50%;transform:translateX(-50%);
+  width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-top:7px solid rgba(255,255,255,0.95);}
+.char-bubble.show{opacity:1;}
+
+/* SVG Character */
+.char-svg-wrap{
+  position:relative;width:90px;height:130px;
+  transition:transform 0.3s;
+}
+.char-svg-wrap.happy{animation:charHappy 0.6s ease-in-out;}
+.char-svg-wrap.shocked{animation:charShocked 0.5s ease-in-out;}
+.char-svg-wrap.angry{animation:charAngry 0.4s ease-in-out;}
+.char-svg-wrap.float{animation:charFloat 3s ease-in-out infinite;}
+@keyframes charHappy{0%{transform:scale(1);}30%{transform:scale(1.15) rotate(5deg);}60%{transform:scale(1.1) rotate(-3deg);}100%{transform:scale(1) rotate(0deg);}}
+@keyframes charShocked{0%{transform:scale(1);}20%{transform:scale(0.9) translateY(-5px);}50%{transform:scale(1.1) translateY(-10px);}100%{transform:scale(1) translateY(0);}}
+@keyframes charAngry{0%{transform:translateX(0);}25%{transform:translateX(-8px);}75%{transform:translateX(8px);}100%{transform:translateX(0);}}
+@keyframes charFloat{0%,100%{transform:translateY(0);}50%{transform:translateY(-8px);}}
+
+.drop-zone{
+  position:absolute;inset:0;border:3px dashed transparent;border-radius:20px;
+  transition:all 0.2s;z-index:6;pointer-events:none;
+}
+.drop-zone.over{border-color:rgba(245,158,11,0.7);background:rgba(245,158,11,0.05);}
+
+.feedback-overlay{
+  position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  z-index:15;pointer-events:none;opacity:0;transition:opacity 0.3s;border-radius:20px;
+}
+.feedback-overlay.wrong{background:rgba(220,38,38,0.25);}
+.feedback-overlay.right{background:rgba(16,185,129,0.25);}
+.feedback-overlay.show{opacity:1;}
+.feedback-big{font-size:60px;animation:feedbackPop 0.5s cubic-bezier(0.34,1.56,0.64,1);}
+@keyframes feedbackPop{0%{transform:scale(0) rotate(-20deg);}100%{transform:scale(1) rotate(0deg);}}
+
+.float-text{
+  position:absolute;font-size:18px;font-weight:900;pointer-events:none;z-index:20;
+  animation:floatUp 1.2s ease-out forwards;
+  text-shadow:0 2px 8px rgba(0,0,0,0.5);
+}
+@keyframes floatUp{0%{opacity:1;transform:translateY(0) scale(1);}100%{opacity:0;transform:translateY(-80px) scale(1.3);}}
+
+/* ===== SCENARIO TEXT ===== */
+.scenario-box{
+  background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);
+  border-radius:14px;padding:12px 16px;
+  font-size:14px;line-height:1.6;color:#e2e8f0;text-align:center;
+  flex-shrink:0;overflow-x:hidden!important;
+}
+.scenario-box strong{color:var(--gold);}
+
+/* ===== ITEMS GRID — FIX SCROLLBAR FLASHING ===== */
+.items-wrap{
+  display:flex;gap:10px;justify-content:center;flex-wrap:wrap;flex-shrink:0;
+  padding:4px 0;overflow-x:hidden!important;overflow-y:hidden!important;
+  -webkit-overflow-scrolling:touch;
+}
+.item-card{
+  width:68px;height:80px;background:var(--card);border-radius:14px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
+  border:2px solid rgba(255,255,255,0.1);cursor:grab;
+  transition:all 0.2s;user-select:none;position:relative;overflow:hidden;
+  touch-action:none;flex-shrink:0;
+}
+.item-card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,0.03),transparent);}
+.item-card:hover:not(.used):not(.dragging){
+  transform:translateY(-4px) scale(1.05);
+  border-color:rgba(245,158,11,0.4);
+  box-shadow:0 8px 20px rgba(0,0,0,0.4);
+}
+.item-card.dragging{opacity:0.4;transform:scale(0.9);cursor:grabbing;}
+.item-card.used{opacity:0.25;pointer-events:none;}
+.item-card.correct{border-color:var(--green);background:rgba(16,185,129,0.15);}
+.item-card.wrong{border-color:var(--red);background:rgba(220,38,38,0.15);}
+.item-emoji{font-size:28px;line-height:1;}
+.item-name{font-size:10px;color:var(--text2);font-weight:600;}
+.item-pinyin{font-size:9px;color:rgba(255,255,255,0.4);}
+
+/* drag ghost */
+#drag-ghost{
+  position:fixed;width:68px;height:80px;background:var(--card);
+  border-radius:14px;border:2px solid var(--gold);
+  display:none;align-items:center;justify-content:center;flex-direction:column;gap:4px;
+  pointer-events:none;z-index:999;opacity:0.9;transform:translate(-50%,-50%) scale(1.1);
+  box-shadow:0 8px 30px rgba(245,158,11,0.5);
+}
+#drag-ghost .ghost-emoji{font-size:28px;}
+
+/* ===== RESULT POPUP — FIX BUTTONS NOT WORKING ===== */
+.result-popup{
+  position:fixed;inset:0;background:rgba(0,0,0,0.75);backdrop-filter:blur(10px);
+  z-index:200;display:none;align-items:center;justify-content:center;padding:20px;
+  opacity:0;transition:opacity 0.3s;
+}
+.result-popup.show{
+  display:flex;opacity:1;
+}
+.result-popup.hidden{
+  display:none!important;opacity:0!important;
+}
+.result-card{
+  background:linear-gradient(160deg,#1e3a5f,#2d1b69);
+  border-radius:24px;padding:28px 24px;width:100%;max-width:380px;
+  border:1px solid rgba(255,255,255,0.15);box-shadow:0 20px 60px rgba(0,0,0,0.6);
+  animation:popIn 0.4s cubic-bezier(0.34,1.56,0.64,1);
+  max-height:85vh;overflow-y:auto;
+}
+@keyframes popIn{0%{transform:scale(0.6);opacity:0;}100%{transform:scale(1);opacity:1;}}
+.result-title{font-size:22px;font-weight:800;color:#fff;text-align:center;margin-bottom:4px;}
+.result-emoji{font-size:48px;text-align:center;margin:12px 0;}
+.result-reason{
+  background:rgba(255,255,255,0.07);border-radius:12px;padding:14px;
+  font-size:13px;line-height:1.7;color:#e2e8f0;margin-bottom:14px;
+}
+.result-hanzi{font-size:20px;font-weight:700;color:var(--gold);}
+.result-pinyin{font-size:14px;color:var(--text2);}
+.vocab-list{display:flex;flex-direction:column;gap:8px;margin-bottom:16px;}
+.vocab-item{
+  background:rgba(255,255,255,0.05);border-radius:10px;padding:10px 14px;
+  display:flex;align-items:baseline;gap:8px;
+}
+.v-hanzi{font-size:18px;font-weight:700;color:#fff;}
+.v-pinyin{font-size:12px;color:var(--text2);}
+.v-meaning{font-size:12px;color:rgba(255,255,255,0.6);margin-left:auto;}
+.result-btns{display:flex;gap:10px;margin-top:16px;}
+.btn-next{
+  flex:1;padding:14px;background:linear-gradient(135deg,var(--gold),#f97316);
+  color:#fff;font-weight:700;font-size:15px;border:none;border-radius:14px;
+  cursor:pointer;transition:all 0.2s;
+}
+.btn-next:hover{transform:scale(1.02);box-shadow:0 4px 16px rgba(245,158,11,0.4);}
+.btn-replay{
+  padding:14px 20px;background:rgba(255,255,255,0.1);
+  color:#fff;font-weight:600;font-size:14px;border:1px solid rgba(255,255,255,0.2);border-radius:14px;
+  cursor:pointer;transition:all 0.2s;
+}
+.btn-replay:hover{background:rgba(255,255,255,0.15);}
+
+/* ===== SHAKE SCREEN ===== */
+@keyframes screenShake{
+  0%{transform:translateX(0);}10%{transform:translateX(-8px);}20%{transform:translateX(8px);}
+  30%{transform:translateX(-6px);}40%{transform:translateX(6px);}50%{transform:translateX(-3px);}
+  60%{transform:translateX(3px);}100%{transform:translateX(0);}
+}
+.shake{animation:screenShake 0.45s ease-in-out;}
+
+/* ===== PROGRESS BAR ===== */
+.progress-bar{
+  height:4px;background:rgba(255,255,255,0.1);border-radius:4px;overflow:hidden;flex-shrink:0;
+}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--purple),var(--gold));border-radius:4px;transition:width 0.4s;}
+
+/* ===== COMBO ===== */
+.combo-toast{
+  position:fixed;top:80px;left:50%;transform:translateX(-50%);
+  background:linear-gradient(135deg,var(--gold),#f97316);
+  color:#fff;font-weight:800;font-size:16px;padding:8px 20px;border-radius:50px;
+  box-shadow:0 4px 20px rgba(245,158,11,0.5);z-index:250;
+  animation:comboAnim 1.5s ease-out forwards;pointer-events:none;
+}
+@keyframes comboAnim{0%{opacity:0;transform:translateX(-50%) scale(0.7) translateY(10px);}20%{opacity:1;transform:translateX(-50%) scale(1.1) translateY(0);}70%{opacity:1;}100%{opacity:0;transform:translateX(-50%) scale(0.9) translateY(-20px);}}
+
+/* ===== MUSIC TOGGLE ===== */
+.music-toggle{
+  position:fixed;bottom:18px;right:18px;z-index:300;
+  width:42px;height:42px;border-radius:50%;
+  background:rgba(0,0,0,0.45);backdrop-filter:blur(8px);
+  border:1px solid rgba(255,255,255,0.15);
+  color:#fff;font-size:18px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:all 0.2s;user-select:none;
+}
+.music-toggle:hover{background:rgba(0,0,0,0.65);transform:scale(1.08);}
+.music-toggle.playing{color:var(--gold);border-color:rgba(245,158,11,0.4);box-shadow:0 0 12px rgba(245,158,11,0.2);}
+
+/* ===== RESPONSIVE ===== */
+@media(max-height:650px){
+  .scene-wrap{min-height:160px;}
+  .char-svg-wrap{width:70px;height:100px;}
+}
+@media(max-height:550px){
+  .scenario-box{display:none;}
+}
+
+/* ===== GLOBAL SCROLLBAR HIDE (CRITICAL FIX) ===== */
+*{-ms-overflow-style:none;scrollbar-width:none;}
+*::-webkit-scrollbar{display:none!important;width:0!important;height:0!important;}
+</style>
+</head>
+<body>
+
+<canvas id="particles-canvas"></canvas>
+
+<!-- LANG SCREEN -->
+<div id="lang-screen" class="screen active">
+  <div class="title-big">🀄 中文文化闯关</div>
+  <div class="title-sub">Chinese Culture Quest · เกมวัฒนธรรมจีน</div>
+  <div class="lang-grid">
+    <button class="lang-btn" onclick="setLang('zh')"><span class="flag">🇨🇳</span>中文</button>
+    <button class="lang-btn selected" onclick="setLang('en')"><span class="flag">🇺🇸</span>English</button>
+    <button class="lang-btn" onclick="setLang('th')"><span class="flag">🇹🇭</span>ภาษาไทย</button>
+    <button class="lang-btn" onclick="setLang('ja')"><span class="flag">🇯🇵</span>日本語</button>
+    <button class="lang-btn" onclick="setLang('ko')"><span class="flag">🇰🇷</span>한국어</button>
+    <button class="lang-btn" onclick="setLang('es')"><span class="flag">🇪🇸</span>Español</button>
+  </div>
+  <button class="start-btn" onclick="goLevels()">🎮 开始游戏 START</button>
+</div>
+
+<!-- LEVEL SELECT -->
+<div id="level-screen" class="screen">
+  <div class="level-header">
+    <h2 id="lv-title-text">🗺 选关卡</h2>
+    <p id="lv-sub-text">选择场景开始挑战</p>
+  </div>
+  <div class="levels-wrap" id="levels-wrap"></div>
+</div>
+
+<!-- GAME SCREEN -->
+<div id="game-screen" class="screen">
+  <div class="g-header">
+    <button class="g-back" onclick="goLevels()">←</button>
+    <div class="g-title" id="g-level-title">送礼禁忌</div>
+    <div style="display:flex;align-items:center;gap:12px;">
+      <div class="g-lives" id="g-lives">❤️❤️❤️</div>
+      <div class="g-score" id="g-score">0</div>
+    </div>
+  </div>
+  <div class="g-body">
+    <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+    <div class="scenario-box" id="scenario-text"></div>
+    <div class="scene-wrap" id="scene-wrap">
+      <div class="scene-bg">
+        <div class="scene-floor"></div>
+        <div class="scene-stars" id="scene-stars"></div>
+      </div>
+      <div class="char-wrap" id="char-wrap">
+        <div class="char-bubble" id="char-bubble"></div>
+        <div class="char-svg-wrap float" id="char-svg-wrap"></div>
+        <div class="char-name-tag" id="char-name-tag">李奶奶</div>
+      </div>
+      <div class="drop-zone" id="drop-zone"></div>
+      <div class="feedback-overlay" id="feedback-overlay"><div class="feedback-big" id="feedback-big"></div></div>
+    </div>
+    <div class="items-wrap" id="items-wrap"></div>
+  </div>
+</div>
+
+<div id="drag-ghost"><div class="ghost-emoji" id="ghost-emoji"></div><div id="ghost-name" style="font-size:10px;color:rgba(255,255,255,0.7);"></div></div>
+
+<!-- Result popup — buttons are created by JS each time to avoid event binding loss -->
+<div class="result-popup hidden" id="result-popup">
+  <div class="result-card" id="result-card"></div>
+</div>
+
+<button class="music-toggle" id="music-toggle" onclick="toggleMusic()" title="Music On/Off">🔇</button>
+
+<script>
+/* ===================================================
+   DATA
+=================================================== */
+const T = {
+  zh:{ title:"选关卡", sub:"选择场景开始挑战", scenario_hint:"把合适的礼物送给他/她！", next:"下一题 →", replay:"再玩一次", lesson:"中文小课堂", correct_msg:["太棒了！","完全正确！","你真懂礼数！","非常好！"],
+       wrong_msg:["哎呀！","这不对哦","犯忌了！","要避免这个！"], level_locked:"🔒 通关后解锁", combo:"连击",
+       level_done:"关卡完成！", game_over:"游戏结束", go_careful:"下次更谨慎一些！" },
+  en:{ title:"Choose Level", sub:"Select a scene to challenge", scenario_hint:"Drag the right gift!", next:"Next →", replay:"Play Again", lesson:"Chinese Lesson", correct_msg:["Excellent!","Correct!","You know manners!","Great!"],
+       wrong_msg:["Oops!","That's taboo!","Avoid this!","Wrong choice!"], level_locked:"🔒 Unlock later", combo:"COMBO",
+       level_done:"Level Complete!", game_over:"Game Over", go_careful:"Be more careful next time!" },
+  th:{ title:"เลือกด่าน", sub:"เลือกฉากเพื่อเริ่มการแข่งขัน", scenario_hint:"ลากของขวัญที่ถูกต้อง!", next:"ต่อไป →", replay:"เล่นอีกครั้ง", lesson:"เรียนภาษาจีน", correct_msg:["ยอดเยี่ยม!","ถูกต้อง!","คุณรู้จักมารยาท!","ดีมาก!"],
+       wrong_msg:["โอ้โห!","นั่นเป็นข้อห้าม!","หลีกเลี่ยงสิ่งนี้!","ผิด!"], level_locked:"🔒 ปลดล็อกทีหลัง", combo:"คอมโบ",
+       level_done:"ด่านสำเร็จ!", game_over:"จบเกม", go_careful:"ระวังให้มากขึ้นในครั้งหน้า!" },
+  ja:{ title:"レベル選択", sub:"シーンを選んでください", scenario_hint:"正しいものをドラッグして！", next:"次へ →", replay:"もう一度", lesson:"中国語教室", correct_msg:["素晴らしい!","正解!","礼儀を知っている!","よくできました!"],
+       wrong_msg:["あらら!","それはタブーです!","避けてください!","違います!"], level_locked:"🔒 後で解放", combo:"コンボ",
+       level_done:"クリア！", game_over:"ゲームオーバー", go_careful："次はもっと慎重に！" },
+  ko:{ title:"레벨 선택", sub:"장면을 선택하세요", scenario_hint:"올바른 선물을 드래그하세요!", next:"다음 →", replay:"다시 플레이", lesson:"중국어 수업", correct_msg:["훌륭해요!","정답!","예의를 알아요!","잘했어요!"],
+       wrong_msg:["이런!","그건 금기예요!","피하세요!","틀렸어요!"], level_locked:"🔒 나중에 잠금 해제", combo:"콤보",
+       level_done:"클리어!", game_over:"게임 오버", go_careful："다음번엔 더 주의하세요!" },
+  es:{ title:"Elegir Nivel", sub:"Selecciona una escena", scenario_hint:"¡Arrastra el regalo correcto!", next:"Siguiente →", replay:"Jugar de Nuevo", lesson:"Lección China", correct_msg:["¡Excelente!","¡Correcto!","¡Conoces los modales!","¡Muy bien!"],
+       wrong_msg:["¡Ups!","¡Eso es tabú!","¡Evita esto!","¡Incorrecto!"], level_locked:"🔒 Desbloquear luego", combo:"COMBO",
+       level_done:"¡Nivel Completado!", game_over:"Fin del Juego", go_careful："¡Sé más cuidados la próxima vez!" }
+};
+
+const characters = {
+  grandma:{name:{zh:"李奶奶",en:"Grandma Li",th:"คุณยายหลี่",ja:"李おばあちゃん",ko:"이 할머니",es:"Abuela Li"},skin:"#f4d4a8",hair:"#555",outfit:"#c41e3a"},
+  boss:{name:{zh:"王总",en:"Boss Wang",th:"ผู้จัดการหวัง",ja:"王部長",ko:"왕 팀장",es:"Jefe Wang"},skin:"#f0c888",hair:"#222",outfit:"#1a3a6b"},
+  friend:{name:{zh:"小美",en:"Xiao Mei",th:"เสี่ยวเหม่ย",ja:"小美",ko:"샤오메이",es:"Xiao Mei"},skin:"#f8d5b0",hair:"#8b4513",outfit:"#e91e8c"},
+  baby:{name:{zh:"小宝宝",en:"Baby",th:"ทารก",ja:"赤ちゃん",ko:"아기",es:"Bebé"},skin:"#fce8c8",hair:"#555",outfit:"#4fc3f7"},
+};
+
+const levels = [
+  {
+    id:1, emoji:"🎁", accent:"#c41e3a", char:"grandma",
+    title:{zh:"送礼禁忌",en:"Gift Taboos",th:"ของขวัญต้องห้าม",ja:"贈り物のタブー",ko:"선물 금기",es:"Tabúes de Regalos"},
+    scenario:{zh:"李奶奶过生日了！你要送她礼物，<strong>选出合适的礼物</strong>，避开禁忌！",
+      en:"It's Grandma Li's birthday! <strong>Choose the right gift</strong> — avoid taboos!",
+      th:"วันเกิดคุณยายหลี่! <strong>เลือกของขวัญที่เหมาะสม</strong> — หลีกเลี่ยงของต้องห้าม!",
+      ja:"李おばあちゃんの誕生日！<strong>正しいプレゼントを選んで</strong>タブーを避けよう！",
+      ko:"이 할머니 생일! <strong>올바른 선물을 선택</strong>하고 금기를 피하세요!",
+      es:"¡Cumpleaños de la Abuela Li! <strong>Elige el regalo correcto</strong> — ¡evita los tabúos!"},
+    items:[
+      { emoji:"🕐", name:{zh:"钟表",en:"Clock",th:"นาฬิกา",ja:"時計",ko:"시계",es:"Reloj"}, pinyin:"zhōngbiǎo",correct:false,charAnim:"shocked",
+        reason:{zh:"送钟谐音「送终」，意味着诅咒对方死亡，大忌！",en:"'Clock' sounds like 'end of life' — a death curse!",th:"'นาฬิกา' พ้องเสียงกับ 'ส่งคนตาย' — เป็นคำสาป!",ja:"「時計を贈る」は「臨終に立ち会う」と同音異義語で縁起が悪い！",ko:"'시계'(钟)는 '임종'(送终)과 발음이 같아 불길합니다!",es:"'Reloj' suena como 'acompañar en la muerte' — ¡muy de mal augurio!"},
+        vocab:[{h:"送钟",p:"sòng zhōng",m:{zh:"送终：为死者送行",en:"escort the dying",th:"ส่งคนตาย",ja:"臨終に立ち会う",ko:"임종을 맞이하다",es:"acompañar al morir"}}]},
+      { emoji:"🍐", name:{zh:"梨",en:"Pear",th:"ลูกแพร์",ja:"梨",ko:"배",es:"Pera"}, pinyin:"lí",correct:false,charAnim:"sad",
+        reason:{zh:"梨谐音「离」，送梨给长辈意味着分离，很不吉利！",en:"Pear (lí) sounds like 'separation' (lí)",th:"ลูกแพร์ (lí) พ้องเสียงกับ 'การแยกจาก'",ja:"梨は「離」と同音で、別れを意味する！",ko:"배(梨)는 '이별'(离)과 발음이 같아 불길합니다!",es:"La pera suena como 'separación' — ¡implica despedida!"},
+        vocab:[{h:"梨/离",p:"lí / lí",m:{zh:"梨 / 离别",en:"pear / separation",th:"ลูกแพร์ / การแยกจาก",ja:"梨 / 別れ",ko:"배 / 이별",es:"pera / separación"}}]},
+      { emoji:"☂️", name:{zh:"雨伞",en:"Umbrella",th:"ร่ม",ja:"傘",ko:"우산",es:"Paraguas"}, pinyin:"yǔsǎn",correct:false,charAnim:"angry",
+        reason:{zh:"伞谐音「散」，送伞代表关系要散掉，千万别送！",en:"Umbrella (sǎn) sounds like 'scatter/end'",th:"ร่ม (sǎn) พ้องเสียงกับ 'แยกแยะ/จบ'",ja:"傘（さん）は「散る」と同音",ko:"우산(伞)은 '흩어지다'(散)와 발음이 같습니다!",es:"Paraguas suena como 'dispersar' — ¡la relación terminará!"},
+        vocab:[{h:"伞/散",p:"sǎn / sàn",m:{zh:"雨伞 / 散",en:"umbrella / scatter",th:"ร่ม / แยกแยะ",ja:"傘 / 散る",ko:"우산 / 흩어지다",es:"paraguas / dispersar"}}]},
+      { emoji:"🌹", name:{zh:"鲜花",en:"Flowers",th:"ดอกไม้",ja:"お花",ko:"꽃",es:"Flores"}, pinyin:"xiānhuā",correct:true,charAnim:"happy",
+        reason:{zh:"送鲜花是好兆头，喜庆吉祥，祝长辈健康长寿！",en:"Fresh flowers are auspicious and bring good wishes!",th:"ดอกไม้สดเป็นมงคล นำความปรารถนาดี!",ja:"生花は縁起が良く、健康と長寿を願うギフト！",ko:"생화는 상서롭고 건강과 장수를 기원하는 선물입니다!",es:"Las flores frescas son auspiciosas y traen deseos de salud y longevidad!"},
+        vocab:[{h:"鲜花",p:"xiān huā",m:{zh:"鲜花=吉祥之物",en:"flowers = lucky gift",th:"ดอกไม้ = ของมงคล",ja:"花 = 縁起物",ko:"꽃 = 길한 선물",es:"flores = regalo auspicioso"}},{h:"长寿",p:"cháng shòu",m:{zh:"长命百岁",en:"longevity",th:"อายุยืน",ja:"長寿",ko:"장수",es:"longevidad"}}]},
+      { emoji:"🍰", name:{zh:"蛋糕",en:"Cake",th:"เค้ก",ja:"ケーキ",ko:"케이크",es:"Pastel"}, pinyin:"dàngāo",correct:true,charAnim:"happy",
+        reason:{zh:"寿糕是祝寿最经典的礼物，象征长寿圆满！",en:"Birthday cake symbolizes longevity and completeness!",th:"เค้กวันเกิดเป็นสัญลักษณ์ของอายุยืน!",ja:"誕生日ケーキは長寿と円満を象徴する定番ギフト！",ko:"생일 케이크는 장수와 완성을 상징하는 클래식 선물입니다!",es:"El pastel simboliza longevidad y plenitud — ¡un clásico!"},
+        vocab:[{h:"蛋糕",p:"dàn gāo",m:{zh:"蛋糕=庆寿首选",en:"cake = top birthday gift",th:"เค้ก = ของขวัญวันเกิดชั้นนำ",ja:"ケーキ = 誕生日の定番",ko:"케이크 = 생일 최고 선물",es:"pastel = regalo de cumpleaños"}}]},
+      { emoji:"👟", name:{zh:"鞋子",en:"Shoes",th:"รองเท้า",ja:"靴",ko:"신발",es:"Zapatos"}, pinyin:"xiézi",correct:false,charAnim:"shocked",
+        reason:{zh:"送鞋谐音「邪」，且有「走人」的含义，送给长辈非常不礼貌！",en:"Shoes sound like 'evil' and imply 'walk away' — very rude for elders!",th:"รองเท้า พ้องเสียงกับ 'ชั่วร้าย' และหมายถึง 'ออกไป'",ja:"靴は「邪」と同音で、「去れ」という意味も持つ！",ko:"신발(鞋)은 '사악함'(邪)과 발음이 같고 '떠나라'는 의미도 있어 어른께 실례입니다!",es:"Zapatos suenan como 'maligno' e implican 'vete' — ¡muy grosero para mayores!"},
+        vocab:[{h:"鞋/邪",p:"xié / xié",m:{zh:"鞋子 / 邪",en:"shoes / evil",th:"รองเท้า / ชั่วร้าย",ja:"靴 / 邪",ko:"신발 / 사악함",es:"zapatos / maligno"}}]},
+    ]
+  },
+  {
+    id:2, emoji:"🍜", accent:"#8b5cf6", char:"boss",
+    title:{zh:"餐桌礼仪",en:"Dining Etiquette",th:"มารยาทบนโต๊ะอาหาร",ja:"食事のマナー",ko:"식사 예절",es:"Etiqueta en la Mesa"},
+    scenario:{zh:"公司聚餐，你坐在王总旁边。<strong>选出正确的行为</strong>，展现你的礼仪！",
+      en:"Company dinner with Boss Wang. <strong>Choose the correct behavior</strong>!",
+      th:"งานเลี้ยงบริษัทกับผู้จัดการหวัง <strong>เลือกพฤติกรรมที่ถูกต้อง</strong>!",
+      ja:"会社の食事会で王部長の隣。<strong>正しい行動を選んで</strong>マナーを見せよう！",
+      ko:"회사 식사 자리에서 왕 팀장 옆에 앉았습니다. <strong>올바른 행동을 선택</strong>하세요!",
+      es:"Cena de empresa con el Jefe Wang. <strong>Elige el comportamiento correcto</strong> — ¡muestra tus modales!"},
+    items:[
+      { emoji:"🥢", name:{zh:"筷子插饭",en:"Chopsticks in Rice",th:"ตะเกียบปักข้าว",ja:"ご飯に箸を刺す",ko:"밥에 젓가락 꽂기",es:"Palillos en el Arroz"}, pinyin:"kuàizi chā fàn",correct:false,charAnim:"shocked",
+        reason:{zh:"筷子竖插在饭里，形似上香祭祖，是极大的不吉！",en:"Standing chopsticks in rice resembles incense sticks for the dead!",th:"การปักตะเกียบในข้าวเหมือนธูปสำหรับคนตาย — เป็นข้อห้ามที่ยิ่งใหญ่!",ja:"ご飯に箸を立てるのは線香立てに似ており、縁起が非常に悪い！",ko:"밥에 젓가락을 세우는 것은 제사 향과 비슷해 매우 불길합니다!",es:"Los palillos verticales se parecen a incienso funerario — ¡un gran tabú!"},
+        vocab:[{h:"上香",p:"shàng xiāng",m:{zh:"祭祖点香",en:"burn incense for ancestors",th:"จุดธูปบูชาบรรพบุรุษ",ja:"先祖に線香を立てる",ko:"조상에게 향 피우기",es:"quemar incienso para ancestros"}}]},
+      { emoji:"🥂", name:{zh:"敬酒礼让",en:"Toast Humbly",th:"ดื่มอวยพรอย่างถ่อมตน",ja:"謙虚に乾杯",ko:"겸손하게 건배",es:"Brindar con Humildad"}, pinyin:"jìngjiǔ lǐràng",correct:true,charAnim:"happy",
+        reason:{zh:"向长辈或上司敬酒时，自己的杯子要低于对方，表示谦卑尊重！",en:"When toasting elders/superiors, hold your glass LOWER than theirs!",th:"เมื่อดื่มอวยพรผู้ใหญ่/หัวหน้า ถือแก้วให้ต่ำกว่าของพวกเขา — แสดงความเคารพ!",ja:"目上の人に乾杯する際、自分のグラスを相手より低く持つ！",ko:"윗사람에게 건배할 때 자신의 잔을 상대방보다 낮게 드세요!",es:"Al brindar con superiores, sostén tu copa MÁS BAJA que la de ellos — ¡muestra respeto!"},
+        vocab:[{h:"敬酒",p:"jìng jiǔ",m:{zh:"向尊者举杯",en:"toast respectfully",th:"ดื่มอวยพรอย่างเคารพ",ja:"目上の人に乾杯",ko:"어른께 건배",es:"brindar respetuosamente"}},{h:"谦卑",p:"qiān bēi",m:{zh:"低调谦虚",en:"humble",th:"ถ่อมตน",ja:"謙虚",ko:"겸손",es:"humilde"}}]},
+      { emoji:"🐟", name:{zh:"翻鱼",en:"Flip the Fish",th:"พลิกปลา",ja:"魚をひっくり返す",ko:"생선 뒤집기",es:"Voltear el Pescado"}, pinyin:"fān yú",correct:false,charAnim:"angry",
+        reason:{zh:"翻鱼谐音「翻船」，代表厄运！",en:"Flipping fish sounds like 'capsizing a boat' — bad luck!",th:"การพลิกปลา พ้องเสียงกับ 'เรือล่ม' — สัญญาณของโชคร้าย!",ja:"魚をひっくり返すことは「船が転覆する」と同音で、不吉！",ko:"생선 뒤집기(翻鱼)는 '배 전복'(翻船)과 발음이 같아 불길합니다!",es:"Voltear el pescado suena como 'volcar un barco' — ¡señal de mala suerte!"},
+        vocab:[{h:"翻船",p:"fān chuán",m:{zh:"船翻了=大灾",en:"capsized = disaster",th:"เรือล่ม = ภัยพิบัติ",ja:"転覆 = 大災難",ko:"전복 = 재앙",es:"volcar = desastre"}}]},
+      { emoji:"🫗", name:{zh:"主动倒茶",en:"Pour Tea First",th:"เทชาก่อน",ja:"お茶を先に注ぐ",ko:"먼저 차 따르기",es:"Servir Té Primero"}, pinyin:"zhǔdòng dào chá",correct:true,charAnim:"happy",
+        reason:{zh:"主动为长辈和上司倒茶，是尊重和体贴的表现！",en:"Proactively pouring tea for elders and superiors shows care and respect!",th:"การเทชาให้ผู้ใหญ่และหัวหน้าก่อนแสดงความห่วงใยและเคารพ!",ja:"目上の人に先にお茶を注ぐことは、思いやりと尊重の表れ！",ko:"어른과 상사에게 먼저 차를 따르는 것은 배려와 존중의 표현입니다!",es:"Servir té proactivamente a mayores y superiores muestra cuidado y respeto!"},
+        vocab:[{h:"倒茶",p:"dào chá",m:{zh:"倒茶=尊重之举",en:"pour tea = respectful act",th:"เทชา = การแสดงความเคารพ",ja:"お茶を注ぐ = 敬意の行為",ko:"차 따르기 = 존중의 행동",es:"servir té = acto de respeto"}}]},
+      { emoji:"👆", name:{zh:"筷子指人",en:"Point Chopsticks",th:"ชี้ตะเกียบ",ja:"箸で指す",ko:"젓가락으로 가리키기",es:"Señalar con Palillos"}, pinyin:"kuàizi zhǐ rén",correct:false,charAnim:"angry",
+        reason:{zh:"用筷子指向别人是极度不礼貌的行为！",en:"Pointing chopsticks at others is extremely rude!",th:"การชี้ตะเกียบใส่คนอื่นหยาบคายมาก!",ja:"箸で人を指すのは非常に失礼！",ko:"젓가락으로 다른 사람을 가리키는 것은 매우 무례합니다!",es:"Señalar con los palillos a otros es extremadamente grosero!"},
+        vocab:[{h:"失礼",p:"shī lǐ",m:{zh:"失礼=不礼貌",en:"rude / impolite",th:"หยาบคาย",ja:"失礼",ko:"실례",es:"grosero"}}]},
+    ]
+  },
+  {
+    id:3, emoji:"🔢", accent:"#f59e0b", char:"friend",
+    title:{zh:"数字禁忌",en:"Number Taboos",th:"ตัวเลขต้องห้าม",ja:"数字のタブー",ko:"숫자 금기",es:"Tabúes Numéricos"},
+    scenario:{zh:"小美要搬家了，<strong>帮她选门牌号</strong>，避开不吉利的数字！",
+      en:"Xiao Mei is moving! <strong>Help choose her apartment number</strong> — avoid unlucky numbers!",
+      th:"เสี่ยวเหม่ยกำลังย้ายบ้าน! <strong>ช่วยเลือกเลขห้อง</strong> — หลีกเลี่ยงตัวเลขอัปมงคล!",
+      ja:"小美が引っ越し！<strong>部屋番号を選んで</strong>不吉な数字を避けよう！",
+      ko:"샤오메이가 이사합니다! <strong>아파트 번호 선택을 도와주세요</strong> — 불길한 숫자를 피하세요!",
+      es:"¡Xiao Mei se muda! <strong>Ayuda a elegir el número de apartamento</strong> — ¡evita números de mala suerte!"},
+    items:[
+      { emoji:"4️⃣", name:{zh:"4号",en:"No. 4",th:"เลข 4",ja:"4号室",ko:"4호",es:"Núm. 4"}, pinyin:"sì hào",correct:false,charAnim:"shocked",
+        reason:{zh:"「4」谐音「死」，是最忌讳的数字！",en:"'4' (sì) sounds like 'death' (sǐ) — many buildings skip floor 4!",th:"'4' (sì) พ้องเสียงกับ 'ความตาย' (sǐ)",ja:"「4」は「死」と同音で、多くのビルで4階が省かれている！",ko:"'4'(四)는 '죽음'(死)과 발음이 같아 많은 건물에서 4층을 건너뜁니다!",es:"'4' suena como 'muerte' — ¡muchos edificios omiten el piso 4!"},
+        vocab:[{h:"四/死",p:"sì / sǐ",m:{zh:"4谐音死",en:"four / death (homophone)",th:"สี่ / ความตาย (พ้องเสียง)",ja:"4 / 死（同音異義語）",ko:"4 / 죽음 (동음이의어)",es:"cuatro / muerte (homófono)"}}]},
+      { emoji:"8️⃣", name:{zh:"8号",en:"No. 8",th:"เลข 8",ja:"8号室",ko:"8호",es:"Núm. 8"}, pinyin:"bā hào",correct:true,charAnim:"happy",
+        reason:{zh:"「8」谐音「发」（发财），是最吉利的数字！",en:"'8' (bā) sounds like 'prosper/wealth' — the luckiest number!",th:"'8' (bā) พ้องเสียงกับ 'ความมั่งคั่ง' — ตัวเลขที่โชคดีที่สุด!",ja:"「8」は「発財」と同音で最も縁起の良い数字！",ko:"'8'(八)은 '재물/번영'(发)과 발음이 같아 가장 길한 숫자입니다!",es:"'8' suena como 'prosperidad/riqueza' — ¡el número más auspicioso!"},
+        vocab:[{h:"发财",p:"fā cái",m:{zh:"赚钱/发财",en:"get rich / prosper",th:"รวย / เจริญรุ่งเรือง",ja:"金持ちになる",ko:"돈을 벌다 / 번영하다",es:"enriquecerse / prosperar"}}]},
+      { emoji:"6️⃣", name:{zh:"6号",en:"No. 6",th:"เลข 6",ja:"6号室",ko:"6호",es:"Núm. 6"}, pinyin:"liù hào",correct:true,charAnim:"happy",
+        reason:{zh:"「6」谐音「溜」，有顺利、流畅的意思，是吉祥数字！六六大顺！",en:"'6' implies smooth flow — 六六大顺 means everything goes smoothly!",th:"'6' (liù) หมายถึงการไหลลื่นและโชคดี — 六六大顺 หมายถึงทุกอย่างราบรื่น!",ja:"「6」は「スムーズ」を意味し、縁起の良い数字！",ko:"'6'(六)은 순조로움을 의미하며 길한 숫자입니다! 六六大顺!",es:"'6' implica fluidez — 六六大顺 significa que todo va bien!"},
+        vocab:[{h:"六六大顺",p:"liù liù dà shùn",m:{zh:"一切顺利",en:"everything goes smoothly",th:"ทุกอย่างราบรื่น",ja:"万事順調",ko:"모든 일이 순조롭다",es:"todo va bien"}}]},
+      { emoji:"1️⃣4️⃣", name:{zh:"14号",en:"No. 14",th:"เลข 14",ja:"14号室",ko:"14호",es:"Núm. 14"}, pinyin:"shísì hào",correct:false,charAnim:"shocked",
+        reason:{zh:"「14」谐音「要死」！",en:"'14' sounds like 'want to die' (yào sǐ) — avoid it!",th:"'14' พ้องเสียงกับ 'อยากตาย' (yào sǐ)",ja:"「14」は「死にたい」と同音！",ko:"'14'는 '죽고 싶다'(要死)와 발음이 같아 피해야 합니다!",es:"'14' suena como 'querer morir' — ¡evítalo!"},
+        vocab:[{h:"要死",p:"yào sǐ",m:{zh:"想死/快死了",en:"want to die / nearly dead",th:"อยากตาย / ใกล้ตาย",ja:"死にたい",ko:"죽고 싶다",es:"querer morir"}}]},
+      { emoji:"8️⃣8️⃣8️⃣", name:{zh:"888号",en:"No. 888",th:"เลข 888",ja:"888号室",ko:"888호",es:"Núm. 888"}, pinyin:"bābābā hào",correct:true,charAnim:"happy",
+        reason:{zh:"三个8！代表三重财运，是最顶级的吉利数字！",en:"Triple 8! Represents triple prosperity!",th:"สาม 8! เป็นตัวแทนของความมั่งคั่งสามเท่า!",ja:"トリプル8！三重の繁栄を表す最高の縁起番号！",ko:"트리플 8! 세 배의 번영을 의미합니다 — 사람들이 큰돈을 냅니다!",es:"¡Triple 8! Representa triple prosperidad — ¡la gente paga fortunas por este número!"},
+        vocab:[{h:"吉利",p:"jí lì",m:{zh:"好兆头",en:"auspicious / lucky",th:"เป็นมงคล",ja:"縁起が良い",ko:"길하다",es:"auspicioso"}}]},
+    ]
+  },
+  {
+    id:4, emoji:"🎋", accent:"#10b981", char:"baby", locked:true,
+    title:{zh:"春节禁忌",en:"Spring Festival",th:"เทศกาลตรุษจีน",ja:"春節のタブー",ko:"춘절 금기",es:"Año Nuevo Chino"},
+    scenario:{zh:"春节到了！有些事绝对不能做，<strong>找出正确的行为</strong>！",
+      en:"Spring Festival! Some things are absolutely forbidden. <strong>Find the correct behavior</strong>!",
+      th:"เทศกาลตรุษจีนมาถึง! บางอย่างต้องห้ามอย่างเด็ดขาด <strong>หาพฤติกรรมที่ถูกต้อง</strong>!",
+      ja:"春節！絶対にやってはいけないことがある。<strong>正しい行動を見つけよう</strong>！",
+      ko:"춘절! 절대로 해서는 안 되는 일들이 있습니다. <strong>올바른 행동을 찾으세요</strong>!",
+      es:"¡Festival de Primavera! Algunas cosas están absolutamente prohibidas."},
+    items:[
+      { emoji:"🧹", name:{zh:"扫地",en:"Sweep Floor",th:"กวาดพื้น",ja:"掃除",ko:"바닥 쓸기",es:"Barrer"}, pinyin:"sǎo dì",correct:false,charAnim:"shocked",
+        reason:{zh:"大年初一不能扫地，否则会把财运扫走！",en:"Don't sweep on New Year's Day — you'll sweep away good luck!",th:"ห้ามกวาดพื้นในวันปีใหม่ — คุณจะกวาดโชคลาภออกไป!",ja:"元旦に掃除をすると、幸運と富を掃き出してしまう！",ko:"설날에 바닥을 쓸면 행운과 재물을 쓸어버립니다!",es:"¡No barres el Año Nuevo — barrerás la buena suerte y la riqueza!"},
+        vocab:[{h:"扫走财运",p:"sǎo zǒu cái yùn",m:{zh:"把财运扫走",en:"sweep away fortune",th:"กวาดโชคลาภออก",ja:"財運を掃き出す",ko:"재운을 쓸어버리다",es:"barrer la fortuna"}}]},
+      { emoji:"🧨", name:{zh:"放鞭炮",en:"Firecrackers",th:"จุดประทัด",ja:"爆竹を鳴らす",ko:"폭죽 터트리기",es:"Fuegos Artificiales"}, pinyin:"fàng biānpào",correct:true,charAnim:"happy",
+        reason:{zh:"放鞭炮是春节最传统的习俗，驱邪避鬼，迎接新年好运！",en:"Firecrackers are key Spring Festival tradition — ward off evil and welcome luck!",th:"ประทัดเป็นประเพณีสำคัญของตรุษจีน — ขับไล่สิ่งชั่วร้าย!",ja:"爆竹は春節の重要な伝統 — 邪気を払い、幸運を迎える！",ko:"폭죽은 춘절의 중요한 전통 — 악귀를 물리치고 행운을 맞이합니다!",es:"Los fuegos artificiales son tradición en el Año Nuevo — ¡ahuyentan el mal!"},
+        vocab:[{h:"驱邪",p:"qū xié",m:{zh:"赶走坏运气",en:"ward off evil",th:"ขับไล่สิ่งชั่วร้าย",ja:"邪気を払う",ko:"악귀를 물리치다",es:"ahuyentar el mal"}}]},
+      { emoji:"💊", name:{zh:"吃药",en:"Take Medicine",th:"กินยา",ja:"薬を飲む",ko:"약 먹기",es:"Tomar Medicina"}, pinyin:"chī yào",correct:false,charAnim:"sad",
+        reason:{zh:"大年初一忌讳吃药，寓意一整年都会生病！",en:"Taking medicine on New Year's Day implies being sick all year!",th:"การกินยาในวันปีใหม่หมายความว่าคุณจะป่วยตลอดปี!",ja:"元旦に薬を飲むと一年中病気になることを意味する！",ko:"설날에 약을 먹으면 1년 내내 아프다는 의미!",es:"Tomar medicina el Año Nuevo implica estar enfermo todo el año — ¡evítalo!"},
+        vocab:[{h:"忌讳",p:"jì huì",m:{zh:"禁忌/避讳",en:"taboo / avoid",th:"ข้อห้าม / หลีกเลี่ยง",ja:"タブー",ko:"금기 / 피하다",es:"tabú / evitar"}}]},
+      { emoji:"🧧", name:{zh:"发红包",en:"Red Envelopes",th:"ซองแดง",ja:"お年玉",ko:"홍바오",es:"Sobre Rojo"}, pinyin:"fā hóngbāo",correct:true,charAnim:"happy",
+        reason:{zh:"发红包是春节最喜庆的习俗！象征好运和祝福！",en:"Red envelopes are the most festive Spring Festival custom — symbolize luck and blessings!",th:"ซองแดงเป็นประเพณีตรุษจีนที่สนุกที่สุด — เป็นสัญลักษณ์ของโชคลาภและพร!",ja:"お年玉は春節の最も賑やかな習慣 — 幸運と祝福を象徴！",ko:"홍바오는 춘절의 가장 축제적인 관습 — 행운과 축복을 상징합니다!",es:"Los sobres rojos son la costumbre más festiva del Año Nuevo — ¡simbolizan suerte y bendiciones!"},
+        vocab:[{h:"红包",p:"hóng bāo",m:{zh:"吉祥红包",en:"lucky red envelope",th:"ซองแดงมงคล",ja:"縁起の良いお年玉",ko:"길한 홍바오",es:"sobre rojo de la suerte"}}]},
+    ]
+  },
+];
+
+/* ===================================================
+   STATE
+=================================================== */
+let lang='en';
+let currentLevel=null,lives=3,score=0,combo=0,answered=[],dragItem=null,levelScores={};
+
+/* ===================================================
+   PARTICLES
+=================================================== */
+(function(){
+  const c=document.getElementById('particles-canvas'),ctx=c.getContext('2d');
+  let W,H,ps=[];
+  function resize(){W=c.width=innerWidth;H=c.height=innerHeight;}
+  resize();addEventListener('resize',resize);
+  for(let i=0;i<50;i++) ps.push({x:Math.random()*2000,y:Math.random()*2000,r:Math.random()*1.5+0.5,vx:(Math.random()-0.5)*0.3,vy:(Math.random()-0.5)*0.3,a:Math.random()});
+  function tick(){ctx.clearRect(0,0,W,H);ps.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.a+=0.005;if(p.x<0)p.x=W;if(p.x>W)p.x=0;if(p.y<0)p.y=H;if(p.y>H)p.y=0;ctx.beginPath();ctx.arc(p.x%p.x===0?W:p.x,p.y%H,p.r,0,Math.PI*2);ctx.fillStyle=`rgba(255,255,255,${0.3+0.3*Math.sin(p.a)})`;ctx.fill()});requestAnimationFrame(tick)}
+  tick();
+})();
+
+/* ===================================================
+   HELPERS
+=================================================== */
+function t(k){return(T[lang]&&T[lang][k])||T.en[k]||k;}
+function tl(o){return o[lang]||o.en||Object.values(o)[0];}
+function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
+
+function setLang(l){
+  lang=l;
+  document.querySelectorAll('.lang-btn').forEach((b,i)=>{b.classList.remove('selected');if(['zh','en','th','ja','ko','es'][i]===l)b.classList.add('selected');});
+}
+
+function initSceneStars(){
+  const c=document.getElementById('scene-stars');c.innerHTML='';
+  for(let i=0;i<20;i++){const d=document.createElement('div');d.className='star-dot';d.style.left=Math.random()*100+'%';d.style.top=Math.random()*60+'%';d.style.animationDelay=Math.random()*2+'s';d.style.animationDuration=(1.5+Math.random()*2)+'s';c.appendChild(d);}
+}
+
+/* ===================================================
+   CHARACTER SVG
+=================================================== */
+function getCharSVG(key,mood='neutral'){
+  const c=characters[key],sk=c.skin,h=c.hair,o=c.outfit;
+  const mouth={neutral:`<path d="M35 78 Q45 83 55 78" stroke="#8b4513" stroke-width="2" fill="none"/>`,happy:`<path d="M33 75 Q45 87 57 75" stroke="#8b4513" stroke-width="2.5" fill="none"/>`,shocked:`<ellipse cx="45" cy="80" rx="7" ry="9" fill="#222"/>`,sad:`<path d="M35 82 Q45 75 55 82" stroke="#8b4513" stroke-width="2" fill="none"/>`,angry:`<path d="M33 80 Q45 75 57 80" stroke="#8b4513" stroke-width="2" fill="none"/>`};
+  const eye={neutral:`<ellipse cx="35" cy="58" rx="5" ry="6" fill="#222"/><ellipse cx="55" cy="58" rx="5" ry="6" fill="#222"/><circle cx="36.5" cy="56" r="2.5" fill="#fff"/><circle cx="56.5" cy="56" r="2.5" fill="#fff"/>`,happy:`<path d="M30 56 Q35 50 40 56" stroke="#222" stroke-width="2.5" fill="none"/><path d="M50 56 Q55 50 60 56" stroke="#222" stroke-width="2.5" fill="none"/>`,shocked:`<ellipse cx="35" cy="58" rx="7" ry="8" fill="#222"/><ellipse cx="55" cy="58" rx="7" ry="8" fill="#222"/><circle cx="37" cy="55" r="3" fill="#fff"/><circle cx="57" cy="55" r="3" fill="#fff"/>`,sad:`<ellipse cx="35" cy="60" rx="5" ry="5" fill="#222"/><ellipse cx="55" cy="60" rx="5" ry="5" fill="#222"/><path d="M30 53 Q35 57 40 53" stroke="#555" stroke-width="1.5" fill="none"/><path d="M50 53 Q55 57 60 53" stroke="#555" stroke-width="1.5" fill="none"/>`,angry:`<ellipse cx="35" cy="60" rx="5" ry="5" fill="#222"/><ellipse cx="55" cy="60" rx="5" ry="5" fill="#222"/><path d="M28 52 Q35 56 42 52" stroke="#555" stroke-width="2" fill="none"/><path d="M48 52 Q55 56 62 52" stroke="#555" stroke-width="2" fill="none"/>`};
+  let hairShape=key==='grandma'?`<ellipse cx="45" cy="28" rx="22" ry="16" fill="${h}"/><path d="M23 28 Q45 8 67 28 Q67 12 45 12 Q23 12 23 28" fill="${h}"/>`:key==='friend'?`<ellipse cx="45" cy="26" rx="24" ry="18" fill="${h}"/><path d="M21 26 Q45 5 69 26 Q69 8 45 8 Q21 8 21 26" fill="${h}"/><rect x="65" y="18" width="7" height="40" rx="3" fill="${h}"/>`:`<ellipse cx="45" cy="28" rx="22" ry="15" fill="${h}"/><path d="M23 28 Q45 10 67 28 Q67 13 45 13 Q23 13 23 28" fill="${h}"/>`;
+  return `<svg viewBox="0 0 90 130" width="90" height="130"><ellipse cx="45" cy="128" rx="28" ry="5" fill="rgba(0,0,0,0.2)"/><rect x="18" y="88" width="54" height="40" rx="12" fill="${o}"/><rect x="37" y="82" width="16" height="14" rx="6" fill="${sk}"/><ellipse cx="45" cy="50" rx="26" ry="28" fill="${sk}"/>${hairShape}${eye[mood]||eye.neutral}<ellipse cx="45" cy="68" rx="3" ry="2" fill="rgba(0,0,0,0.15)"/>${mouth[mouth]||mouth.neutral}<ellipse cx="27" cy="65" rx="7" ry="4" fill="rgba(255,130,130,0.25)"/><ellipse cx="63" cy="65" rx="7" ry="4" fill="rgba(255,130,130,0.25)"/><rect x="4" y="90" width="15" height="30" rx="7" fill="${o}"/><rect x="71" y="90" width="15" height="30" rx="7" fill="${o}"/><circle cx="11" cy="122" r="7" fill="${sk}"/><circle cx="79" cy="122" r="7" fill="${sk}"/></svg>`;
+}
+
+/* ===================================================
+   NAVIGATION
+=================================================== */
+function goLevels(){renderLevels();showScreen('level-screen');}
+
+function renderLevels(){
+  document.getElementById('lv-title-text').textContent=t('title');
+  document.getElementById('lv-sub-text').textContent=t('sub');
+  const wrap=document.getElementById('levels-wrap');wrap.innerHTML='';
+  levels.forEach((lv,i)=>{
+    const unlocked=i===0||(levelScores[levels[i-1].id]||0)>=1;
+    const locked=lv.locked&&!unlocked,stars=levelScores[lv.id]||0;
+    const d=document.createElement('div');d.className='lv-card'+(locked?' locked':'');d.style.setProperty('--accent',lv.accent);
+    d.innerHTML=`<div class="lv-emoji">${lv.emoji}</div><div class="lv-num">LV.${lv.id}</div><div class="lv-title">${tl(lv.title)}</div><div class="lv-stars">${'⭐'.repeat(stars)}${'☆'.repeat(3-stars)}</div>${locked?'<div class="lv-lock">🔒</div>:''}`;
+    if(!locked)d.onclick=()=>startLevel(lv.id);
+    wrap.appendChild(d);
+  });
+}
+
+function startLevel(id){
+  currentLevel=levels.find(l=>l.id===id);if(!currentLevel)return;
+  lives=3;score=0;combo=0;answered=[];updateHeader();renderGameScreen();showScreen('game-screen');
+}
+
+function updateHeader(){
+  document.getElementById('g-level-title').textContent=tl(currentLevel.title);
+  const ha=['❤️','❤️','❤️'];for(let i=lives;i<3;i++)ha[i]='🖤';
+  document.getElementById('g-lives').textContent=ha.join('');
+  document.getElementById('g-score').textContent=score;
+}
+
+function renderGameScreen(){
+  initSceneStars();
+  document.getElementById('scenario-text').innerHTML=tl(currentLevel.scenario);
+  document.getElementById('char-name-tag').textContent=tl(characters[currentLevel.char].name);
+  document.getElementById('char-svg-wrap').innerHTML=getCharSVG(currentLevel.char,'neutral');
+  updateProgress();renderItems();
+}
+
+function updateProgress(){
+  const total=currentLevel.items.length,done=answered.length;
+  document.getElementById('progress-fill').style.width=(done/total*100)+'%';
+}
+
+function renderItems(){
+  const w=document.getElementById('items-wrap');w.innerHTML='';
+  currentLevel.items.forEach((item,i)=>{
+    if(answered.includes(i))return;
+    const c=document.createElement('div');c.className='item-card';c.dataset.index=i;
+    c.innerHTML=`<div class="item-emoji">${item.emoji}</div><div class="item-name">${tl(item.name)}</div><div class="item-pinyin">${item.pinyin||''}</div>`;
+    c.addEventListener('touchstart',onItemTouchStart,{passive:false});
+    c.addEventListener('mousedown',onItemMouseDown);
+    w.appendChild(c);
+  });
+}
+
+/* ===================================================
+   DRAG & DROP
+=================================================== */
+let touchActive=false,mouseActive=false;
+
+function onItemTouchStart(e){e.preventDefault();const card=e.currentTarget,idx=parseInt(card.dataset.index);dragItem=idx;touchActive=true;
+  showGhost(currentLevel.items[idx],e.touches[0].clientX,e.touches[0].clientY);card.classList.add('dragging');
+  addEventListener('touchmove',onTouchMove,{passive:false});addEventListener('touchend',onTouchEnd);}
+function onTouchMove(e){e.preventDefault();moveGhost(e.touches[0].clientX,e.touches[0].clientY);checkDropZoneHover(e.touches[0].clientX,e.touches[0].clientY);}
+function onTouchEnd(e){if(!touchActive)return;touchActive=false;
+  handleDrop(e.changedTouches[0].clientX,e.changedTouches[0].clientY);hideGhost();clearDraggingClass();
+  removeEventListener('touchmove',onTouchMove);removeEventListener('touchend',onTouchEnd);
+  document.getElementById('drop-zone').classList.remove('over');}
+
+function onItemMouseDown(e){e.preventDefault();const card=e.currentTarget,idx=parseInt(card.dataset.index);dragItem=idx;mouseActive=true;
+  showGhost(currentLevel.items[idx],e.clientX,e.clientY);card.classList.add('dragging');
+  addEventListener('mousemove',onMouseMove);addEventListener('mouseup',onMouseUp);}
+function onMouseMove(e){moveGhost(e.clientX,e.clientY);checkDropZoneHover(e.clientX,e.clientY);}
+function onMouseUp(e){if(!mouseActive)return;mouseActive=false;
+  handleDrop(e.clientX,e.clientY);hideGhost();clearDraggingClass();
+  removeEventListener('mousemove',onMouseMove);removeEventListener('mouseup',onMouseUp);
+  document.getElementById('drop-zone').classList.remove('over');}
+
+function showGhost(itm,x,y){const g=document.getElementById('drag-ghost');document.getElementById('ghost-emoji').textContent=itm.emoji;document.getElementById('ghost-name').textContent=tl(itm.name);g.style.display='flex';g.style.left=x+'px';g.style.top=y+'px';}
+function moveGhost(x,y){const g=document.getElementById('drag-ghost');g.style.left=x+'px';g.style.top=y+'px';}
+function hideGhost(){document.getElementById('drag-ghost').style.display='none';dragItem=null;}
+function clearDraggingClass(){document.querySelectorAll('.item-card.dragging').forEach(c=>c.classList.remove('dragging'));}
+
+function checkDropZoneHover(x,y){const sc=document.getElementById('scene-wrap'),r=sc.getBoundingClientRect();
+  document.getElementById('drop-zone').classList.toggle('over',x>=r.left&&x<=r.right&&y>=r.top&&y<=r.bottom)}
+
+function handleDrop(x,y){if(dragItem===null)return;const sc=document.getElementById('scene-wrap'),r=sc.getBoundingClientRect(),hit=x>=r.left&&x<=r.right&&y>=r.top&&y<=r.bottom;if(!hit)return;processAnswer(dragItem);}
+
+/* ===================================================
+   ANSWER PROCESSING
+=================================================== */
+function processAnswer(idx){
+  if(answered.includes(idx))return;
+  const item=currentLevel.items[idx],correct=item.correct;
+  answered.push(idx);updateProgress();
+  setCharMood(item.charAnim||(correct?'happy':'shocked'));
+  if(correct){
+    combo++;score+=100+(combo>1?combo*20:0);updateHeader();showFeedback(true);
+    showFloatText('+100'+(combo>1?' +COMBO×'+combo:''),'#10b981');if(combo>=2)showComboToast();playSound('correct');
+    markItemCard(idx,'correct');setTimeout(()=>showResultPopup(item,true),700);
+  }else{
+    combo=0;lives--;updateHeader();showFeedback(false);showFloatText('✗ 禁忌！','#ef4444');playSound('wrong');shakeScreen();markItemCard(idx,'wrong');setTimeout(()=>showResultPopup(item,false),700);
+  }
+  if(lives<=0)setTimeout(showGameOver,800);
+}
+
+function setCharMood(mood){
+  const wrap=document.getElementById('char-svg-wrap');
+  wrap.innerHTML=getCharSVG(currentLevel.char,mood);
+  wrap.classList.remove('float','happy','shocked','angry','sad');void wrap.offsetWidth;
+  wrap.classList.add(mood==='happy'?'happy':mood==='shocked'?'shocked':mood==='angry'?'angry':'shocked');
+  showBubble(mood);
+  setTimeout(()=>{wrap.innerHTML=getCharSVG(currentLevel.char,'neutral');wrap.classList.remove('happy','shocked','angry','sad');wrap.classList.add('float');hideBubble();},2500);
+}
+
+function showBubble(mood){
+  const b=document.getElementById('char-bubble'),msgs={
+    happy:{zh:['谢谢！🥰','太好了！😊','很棒！❤️'],en:['Thank you! 🥰','So nice! 😊','Love it! ❤️'],th:['ขอบคุณ! 🥰','ดีมาก! 😊','รัก! ❤️'],ja:['ありがとう！🥰','すごい！😊','嬉しい！❤️'],ko:['감사해요! 🥰','좋아요! 😊','최고! ❤️'],es:['¡Gracias! 🥰','¡Qué bien! 😊','¡Me encanta! ❤️']},
+    shocked:{zh:['这…这是什么！😱','不行不行！😰','太不吉利了！😨'],en:['Oh no! 😱','What is this?! 😰','How unlucky! 😨'],th:['โอ้ไม่! 😱','นี่คืออะไร?! 😰','โชคร้ายจัง! 😨'],ja:['なんてこと！😱','これは困る！😰','縁起が悪い！😨'],ko:['어머나! 😱','이게 뭐야?! 😰','불길해! 😨'],es:['¡Oh no! 😱','¿Qué es esto?! 😰','¡Qué mala suerte! 😨']},
+    angry:{zh:['这！！！😤','太失礼了！😠','你在干什么！😡'],en:['How rude! 😤',"That's impolite! 😠",'How dare you! 😡'],th:['หยาบคายมาก! 😤','ไม่สุภาพ! 😠','คุณกำลังทำอะไร! 😡'],ja:['なんて失礼な！😤','礼儀を知れ！😠','何をするんだ！😡'],ko:['무례해! 😤','예의 없어! 😠','뭐하는 거야! 😡'],es:['¡Qué grosero! 😤','¡Qué descortés! 😠','¡Cómo te atreves! 😡']},
+    sad:{zh:['好难过…😢','这意味着离别…😥'],en:['So sad... 😢','This means goodbye... 😥'],th:['เศร้ามาก... 😢','นี่หมายถึงการจากลา... 😥'],ja:['悲しいよ…😢','別れを意味するの…😥'],ko:['너무 슬퍼... 😢','이별을 의미해... 😥'],es:['Qué triste... 😢','Esto significa adiós... 😥']},
+  };
+  const arr=((msgs[mood]||msgs.shocked)[lang]||(msgs[mood]||msgs.shocked).en)||[''];
+  b.textContent=arr[Math.floor(Math.random()*arr.length)];b.classList.add('show');
+}
+function hideBubble(){document.getElementById('char-bubble').classList.remove('show');}
+
+function markItemCard(idx,cls){const c=document.querySelector(`.item-card[data-index="${idx}"]`);if(c){c.classList.add(cls);setTimeout(()=>c.classList.add('used'),600);}}
+
+function showFeedback(ok){const ov=document.getElementById('feedback-overlay'),bg=document.getElementById('feedback-big');
+  ov.className='feedback-overlay '+(ok?'right':'wrong');bg.textContent=ok?'✅':'❌';ov.classList.add('show');
+  setTimeout(()=>ov.classList.remove('show'),800);}
+
+function showFloatText(txt,color){const sc=document.getElementById('scene-wrap'),el=document.createElement('div');
+  el.className='float-text';el.textContent=txt;el.style.color=color;el.style.left=(30+Math.random()*40)+'%';el.style.top='30%';
+  sc.appendChild(el);setTimeout(()=>el.remove(),1200);}
+
+function showComboToast(){const el=document.createElement('div');el.className='combo-toast';
+  el.textContent=`🔥 ${combo}× ${t('combo').toUpperCase()}!`;document.body.appendChild(el);setTimeout(()=>el.remove(),1600);}
+
+function shakeScreen(){const gs=document.getElementById('game-screen');gs.classList.remove('shake');void gs.offsetWidth;gs.classList.add('shake');if(navigator.vibrate)vibrate([80,30,80]);}
+
+/* ===================================================
+   SOUND EFFECTS
+=================================================== */
+let audioCtx=null;
+function getAudioCtx(){if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();return audioCtx;}
+function playSound(type){
+  try{const ctx=getAudioCtx(),osc=ctx.createOscillator(),gain=ctx.createGain();
+    osc.connect(gain);gain.connect(ctx.destination);
+    if(type==='correct'){osc.type='sine';osc.frequency.setValueAtTime(523,ctx.currentTime);osc.frequency.exponentialRampToValueAtTime(1046,ctx.currentTime+0.15);gain.gain.setValueAtTime(0.25,ctx.currentTime);gain.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.4);osc.start();osc.stop(ctx.currentTime+0.4);}
+    else{osc.type='sawtooth';osc.frequency.setValueAtTime(200,ctx.currentTime);osc.frequency.exponentialRampToValueAtTime(60,ctx.currentTime+0.3);gain.gain.setValueAtTime(0.2,ctx.currentTime);gain.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.35);osc.start();osc.stop(ctx.currentTime+0.35);}}catch(e){}
+}
+
+/* ===================================================
+   BACKGROUND MUSIC — Light & Cheerful Synthesized BGM
+=================================================== */
+let musicPlaying=false,musicNodes=[],musicInterval=null;
+
+// Simple pentatonic melody loop using Web Audio API — light, relaxing, game-like
+function startBGM(){
+  try{
+    stopBGM(); // clean up first
+    const ctx=getAudioCtx();
+
+    // Create master gain for volume control
+    const master=ctx.createGain();
+    master.gain.value=0.06; // quiet background level
+    master.connect(ctx.destination);
+
+    // Melody notes (pentatonic scale, cheerful pattern)
+    const melody=[
+      {note:523.25,dur:0.3},{note:587.33,dur:0.15},{note:659.25,dur:0.3},{note:783.99,dur:0.3},
+      {note:659.25,dur:0.15},{note:587.33,dur:0.3},{note:523.25,dur:0.4},
+      {note:392.00,dur:0.3},{note:440.00,dur:0.15},{note:493.88,dur:0.3},{note:587.33,dur:0.3},
+      {note:493.88,dur:0.15},{note:440.00,dur:0.3},{note:392.00,dur:0.4},
+      // pause
+      {note:0,dur:0.2},
+      // repeat variation
+      {note:523.25,dur:0.2},{note:659.25,dur:0.2},{note:783.99,dur:0.2},{note:880.00,dur:0.4},
+      {note:783.99,dur:0.2},{note:659.25,dur:0.2},{note:523.25,dur:0.4},
+      {note:0,dur:0.3},
+      {note:392.00,dur:0.2},{note:493.88,dur:0.2},{note:587.33,dur:0.2},{note:659.25,dur:0.4},
+      {note:0,dur:0.5},
+    ];
+
+    let idx=0;
+    function playNote(){
+      if(!musicPlaying)return;
+      const n=melody[idx];
+      if(n.note>0){
+        const osc=ctx.createOscillator(),g=ctx.createGain();
+        osc.type='triangle';osc.frequency.value=n.note;
+        g.gain.setValueAtTime(0.0001,ctx.currentTime);
+        g.gain.linearRampToValueAtTime(0.15,ctx.currentTime+0.02);
+        g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+n.dur);
+        osc.connect(g);g.connect(master);
+        osc.start();osc.stop(ctx.currentTime+n.dur+0.05);
+      }
+      idx=(idx+1)%melody.length;
+    }
+
+    playNote();
+    musicInterval=setInterval(playNote,320); // tempo
+    musicNodes.push(master);
+    musicPlaying=true;
+  }catch(e){musicPlaying=false;}
+}
+
+function stopBGM(){
+  musicPlaying=false;
+  if(musicInterval){clearInterval(musicInterval);musicInterval=null;}
+  musicNodes=[];
+}
+
+function toggleMusic(){
+  if(musicPlaying){stopBGM();document.getElementById('music-toggle').textContent='🔇';document.getElementById('music-toggle').classList.remove('playing');
+  }else{startBGM();document.getElementById('music-toggle').textContent='🎵';document.getElementById('music-toggle').classList.add('playing');}
+}
+
+/* Auto-play hint on first interaction */
+let bgmHinted=false;
+document.addEventListener('click',function once(){
+  if(!bgmHinted && !musicPlaying){document.querySelector('.music-toggle').animate([{transform:'scale(1)'},{transform:'scale(1.2)'},{transform:'scale(1)'}],{duration:600});bgmHinted=true;}
+},{once:true});
+
+/* ===================================================
+   RESULT POPUP — FIXED: buttons always work
+=================================================== */
+function showResultPopup(item,correct){
+  const popup=document.getElementById('result-popup'),card=document.getElementById('result-card');
+  const msgs=correct?t('correct_msg'):t('wrong_msg');
+  const msg=Array.isArray(msgs)?msgs[Math.floor(Math.random()*msgs.length)]:msgs;
+
+  let vocabHTML='';
+  if(item.vocab&&item.vocab.length){
+    vocabHTML=`<div style="font-size:13px;font-weight:700;color:rgba(255,255,255,0.5);margin-bottom:8px;text-transform:uppercase;letter-spacing:1px;">${t('lesson')} 📖</div><div class="vocab-list">`;
+    item.vocab.forEach(v=>vocabHTML+=`<div class="vocab-item"><div><div class="v-hanzi">${v.h}</div><div class="v-pinyin">${v.p}</div></div><div class="v-meaning">${tl(v.m)}</div></div>`);
+    vocabHTML+='</div>';
+  }
+  const allAnswered=answered.length>=currentLevel.items.length;
+
+  card.innerHTML=`
+    <div class="result-title">${msg}</div>
+    <div class="result-emoji">${correct?'🎉':'😬'}</div>
+    <div class="result-reason">
+      <span class="result-hanzi">${tl(item.name)}</span><span class="result-pinyin"> · ${item.pinyin||''}</span><br>
+      <span style="font-size:13px;color:rgba(255,255,255,0.8);">${tl(item.reason)}</span>
+    </div>
+    ${vocabHTML}
+    <div class="result-btns">
+      <button class="btn-replay" data-action="${allAnswered?'replay_level':'close'}">${allAnswered?'📊 '+t('replay'):'← 继续'}</button>
+      <button class="btn-next" data-action="${allAnswered?'level_complete':'next_q'}">${allAnswered?'🏆 '+t('level_done'):t('next')}</button>
+    </div>`;
+
+  // Attach click handlers directly to button elements (NOT via innerHTML onclick)
+  card.querySelectorAll('[data-action]').forEach(btn=>{
+    btn.addEventListener('click',function(){
+      const action=this.getAttribute('data-action');
+      closePopup();
+      if(action==='next_q'){renderItems();}
+      else if(action==='level_complete'){levelComplete();}
+      else if(action==='replay_level'){startLevel(currentLevel.id);}
+    });
+  });
+
+  popup.classList.remove('hidden');popup.classList.add('show');
+}
+
+function closePopup(){
+  const popup=document.getElementById('result-popup');
+  popup.classList.remove('show');popup.classList.add('hidden');
+}
+
+function levelComplete(){
+  closePopup();
+  const total=currentLevel.items.length;
+  const correctCount=currentLevel.items.filter((_,i)=>answered.includes(i)&&currentLevel.items[i].correct).length;
+  const pct=score/(total*100);
+  let stars=pct>=0.8?3:pct>=0.5?2:1;
+  levelScores[currentLevel.id]=stars;
+
+  const card=document.getElementById('result-card');
+  card.innerHTML=`
+    <div class="result-title">🏆 ${t('level_done')}</div>
+    <div class="result-emoji">${'⭐'.repeat(stars)}${'☆'.repeat(3-stars)}</div>
+    <div style="text-align:center;margin-bottom:16px;"><div style="font-size:32px;font-weight:900;color:var(--gold);">${score}</div><div style="font-size:13px;color:var(--text2);">分数 · Score</div></div>
+    <div class="result-btns">
+      <button class="btn-replay" data-action="replay_now">${t('replay')}</button>
+      <button class="btn-next" data-action="go_levels">🗺 选关 Choose Level</button>
+    </div>`;
+
+  card.querySelectorAll('[data-action]').forEach(btn=>{
+    btn.addEventListener('click',function(){
+      const action=this.getAttribute('data-action');
+      closePopup();
+      if(action==='replay_now'){startLevel(currentLevel.id);}
+      else if(action==='go_levels'){goLevels();}
+    });
+  });
+
+  const popup=document.getElementById('result-popup');
+  popup.classList.remove('hidden');popup.classList.add('show');
+}
+
+function showGameOver(){
+  closePopup();
+  const card=document.getElementById('result-card');
+  card.innerHTML=`
+    <div class="result-title">💔 ${t('game_over')}</div>
+    <div class="result-emoji">😵</div>
+    <div style="text-align:center;color:var(--text2);font-size:14px;margin-bottom:16px;">${t('go_careful')}<br>Be more careful next time!</div>
+    <div class="result-btns">
+      <button class="btn-replay" data-action="go_levels">← 选关</button>
+      <button class="btn-next" data-action="retry">🔄 再来一次</button>
+    </div>`;
+
+  card.querySelectorAll('[data-action]').forEach(btn=>{
+    btn.addEventListener('click',function(){
+      const action=this.getAttribute('data-action');
+      closePopup();
+      if(action==='retry'){startLevel(currentLevel.id);}
+      else if(action==='go_levels'){goLevels();}
+    });
+  });
+
+  const popup=document.getElementById('result-popup');
+  popup.classList.remove('hidden');popup.classList.add('show');
+}
+
+// Init
+setLang('en');
+</script>
+</body>
+</html>
