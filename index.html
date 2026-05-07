@@ -240,7 +240,7 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Segoe UI',system-u
   box-shadow:0 8px 20px rgba(0,0,0,0.4);
 }
 .item-card.dragging{opacity:0.4;transform:scale(0.9);cursor:grabbing;}
-.item-card.used{opacity:0.25;pointer-events:none;}
+.item-card.used{opacity:0;pointer-events:none;transition:opacity 0.4s;}
 .item-card.correct{border-color:var(--green);background:rgba(16,185,129,0.15);}
 .item-card.wrong{border-color:var(--red);background:rgba(220,38,38,0.15);}
 .item-emoji{font-size:28px;line-height:1;}
@@ -424,7 +424,7 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Segoe UI',system-u
   <div class="result-card" id="result-card"></div>
 </div>
 
-<button class="music-toggle" id="music-toggle" title="Music On/Off">🔇</button>
+<button class="music-toggle playing" id="music-toggle" title="Music On/Off">🎵</button>
 
 <script>
 /* ===================================================
@@ -442,13 +442,13 @@ const T = {
        level_done:"ด่านสำเร็จ!", game_over:"จบเกม", go_careful:"ระวังให้มากขึ้นในครั้งหน้า!" },
   ja:{ title:"レベル選択", sub:"シーンを選んでください", scenario_hint:"正しいものをドラッグして！", next:"次へ →", replay:"もう一度", lesson:"中国語教室", correct_msg:["素晴らしい!","正解!","礼儀を知っている!","よくできました!"],
        wrong_msg:["あらら!","それはタブーです!","避けてください!","違います!"], level_locked:"🔒 後で解放", combo:"コンボ",
-       level_done:"クリア！", game_over:"ゲームオーバー", go_careful："次はもっと慎重に！" },
+       level_done:"クリア！", game_over:"ゲームオーバー", go_careful:"次はもっと慎重に！" },
   ko:{ title:"레벨 선택", sub:"장면을 선택하세요", scenario_hint:"올바른 선물을 드래그하세요!", next:"다음 →", replay:"다시 플레이", lesson:"중국어 수업", correct_msg:["훌륭해요!","정답!","예의를 알아요!","잘했어요!"],
        wrong_msg:["이런!","그건 금기예요!","피하세요!","틀렸어요!"], level_locked:"🔒 나중에 잠금 해제", combo:"콤보",
-       level_done:"클리어!", game_over:"게임 오버", go_careful："다음번엔 더 주의하세요!" },
+       level_done:"클리어!", game_over:"게임 오버", go_careful:"다음번엔 더 주의하세요！" },
   es:{ title:"Elegir Nivel", sub:"Selecciona una escena", scenario_hint:"¡Arrastra el regalo correcto!", next:"Siguiente →", replay:"Jugar de Nuevo", lesson:"Lección China", correct_msg:["¡Excelente!","¡Correcto!","¡Conoces los modales!","¡Muy bien!"],
        wrong_msg:["¡Ups!","¡Eso es tabú!","¡Evita esto!","¡Incorrecto!"], level_locked:"🔒 Desbloquear luego", combo:"COMBO",
-       level_done:"¡Nivel Completado!", game_over:"Fin del Juego", go_careful："¡Sé más cuidados la próxima vez!" }
+       level_done:"¡Nivel Completado!", game_over:"Fin del Juego", go_careful:"¡Sé más cuidados la próxima vez!" }
 };
 
 const characters = {
@@ -635,7 +635,7 @@ function renderLevels(){
     const unlocked=i===0||(levelScores[levels[i-1].id]||0)>=1;
     const locked=lv.locked&&!unlocked,stars=levelScores[lv.id]||0;
     const d=document.createElement('div');d.className='lv-card'+(locked?' locked':'');d.style.setProperty('--accent',lv.accent);
-    d.innerHTML=`<div class="lv-emoji">${lv.emoji}</div><div class="lv-num">LV.${lv.id}</div><div class="lv-title">${tl(lv.title)}</div><div class="lv-stars">${'⭐'.repeat(stars)}${'☆'.repeat(3-stars)}</div>${locked?'<div class="lv-lock">🔒</div>:''}`;
+    d.innerHTML='<div class="lv-emoji">' + lv.emoji + '</div><div class="lv-num">LV.' + lv.id + '</div><div class="lv-title">' + tl(lv.title) + '</div><div class="lv-stars">' + '★'.repeat(stars) + '☆'.repeat(3-stars) + '</div>' + (locked?'<div class="lv-lock">🔒</div>':'');
     if(!locked)d.addEventListener('click',()=>startLevel(lv.id));
     wrap.appendChild(d);
   });
@@ -750,7 +750,7 @@ function showBubble(mood){
 }
 function hideBubble(){document.getElementById('char-bubble').classList.remove('show');}
 
-function markItemCard(idx,cls){const c=document.querySelector(`.item-card[data-index="${idx}"]`);if(c){c.classList.add(cls);setTimeout(()=>c.classList.add('used'),600);}}
+function markItemCard(idx,cls){const c=document.querySelector(`.item-card[data-index="${idx}"]`);if(c){c.classList.add(cls,'used');setTimeout(()=>{if(c.parentNode)c.parentNode.removeChild(c);},400);}}
 
 function showFeedback(ok){const ov=document.getElementById('feedback-overlay'),bg=document.getElementById('feedback-big');
   ov.className='feedback-overlay '+(ok?'right':'wrong');bg.textContent=ok?'✅':'❌';ov.classList.add('show');
@@ -812,7 +812,7 @@ function startBGM(){
         g.gain.linearRampToValueAtTime(0.15,ctx.currentTime+0.02);
         g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+n.dur);
         osc.connect(g);g.connect(master);
-        osc.start();osc.stop(ctx.currentTime+n.dur+0.05);
+        osc.start(ctx.currentTime);osc.stop(ctx.currentTime+n.dur+0.05);
       }
       idx=(idx+1)%melody.length;
     }
@@ -820,7 +820,7 @@ function startBGM(){
     musicInterval=setInterval(playNote,320);
     musicNodes.push(master);
     musicPlaying=true;
-  }catch(e){musicPlaying=false;}
+  }catch(e){console.error('BGM error:',e);musicPlaying=false;}
 }
 
 function stopBGM(){
@@ -834,11 +834,11 @@ function toggleMusic(){
   }else{startBGM();document.getElementById('music-toggle').textContent='🎵';document.getElementById('music-toggle').classList.add('playing');}
 }
 
-/* Auto-play hint on first interaction */
-let bgmHinted=false;
-document.addEventListener('click',function once(){
-  if(!bgmHinted && !musicPlaying){document.querySelector('.music-toggle').animate([{transform:'scale(1)'},{transform:'scale(1.2)'},{transform:'scale(1)'}],{duration:600});bgmHinted=true;}
-},{once:true});
+/* Auto-play BGM on first interaction (default ON visual state) */
+let bgmStarted=false;
+document.addEventListener('click',function(){
+  if(!bgmStarted){bgmStarted=true;startBGM();}
+},{once:true});;
 
 /* ===================================================
    RESULT POPUP — buttons always work via addEventListener
@@ -905,7 +905,7 @@ function levelComplete(){
   const card=document.getElementById('result-card');
   card.innerHTML=`
     <div class="result-title">🏆 ${t('level_done')}</div>
-    <div class="result-emoji">${'⭐'.repeat(stars)}${'☆'.repeat(3-stars)}</div>
+    <div class="result-emoji">${'★'.repeat(stars)}${'☆'.repeat(3-stars)}</div>
     <div style="text-align:center;margin-bottom:16px;"><div style="font-size:32px;font-weight:900;color:var(--gold);">${score}</div><div style="font-size:13px;color:var(--text2);">分数 · Score</div></div>
     <div class="result-btns">
       <button class="btn-replay" id="lc-btn-a">${t('replay')}</button>
